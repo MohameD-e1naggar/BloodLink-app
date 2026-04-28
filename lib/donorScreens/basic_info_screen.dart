@@ -54,6 +54,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
           fullName: name,
           email: email,
           phone: _phoneNumber,
+          pass: password,
         ),
       ),
     );

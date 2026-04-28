@@ -1,42 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:www/donorScreens/request_screen.dart';
-import 'package:www/data/requests_store.dart';
+import 'package:www/Backend/models/Request.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
 
 class DonationDetailsScreen extends StatelessWidget {
-  final int requestIndex;
+  final Request request;
 
-  const DonationDetailsScreen({super.key, required this.requestIndex});
+  const DonationDetailsScreen({
+    super.key,
+    required this.request,
+  });
 
-  Map<String, dynamic> get _request => allRequests[requestIndex];
+  bool get isEmergency => request.urgency == Urgency.critical.name;
 
-  void _handleAcceptDonation(BuildContext context) {
-    allRequests[requestIndex]['status'] = 'Accepted';
-    allRequests[requestIndex]['statusColor'] = Colors.green;
+  Future<void> _updateStatus(
+      BuildContext context,
+      RequestStatus status,
+      ) async {
+    if (request.id == null) return;
 
-    globalMyRequests.add({
-      'hospital': _request['hospital'] ?? 'Unknown Hospital',
-      'type': _request['bloodType'] ?? '?',
-      'status': _request['isEmergency'] == true ? 'URGENT' : 'CONFIRMED',
-      'date': DateFormat('EEEE, d MMMM yyyy').format(DateTime.now()),
-      'time': DateFormat('hh:mm a').format(DateTime.now()),
-      'donors': '1',
-    });
+    await FirestoreHandler.updateStatus(request.id!, status);
 
-    _showSuccessDialog(context);
+    // 🔥 return to previous screen and trigger refresh
+    Navigator.pop(context, true);
   }
 
-  void _showSuccessDialog(BuildContext context) {
+  // ✅ FIXED: dialog handles update + navigation
+  void _handleAccept(BuildContext context) async {
+    // Safety check for required data
+    if (request.id == null || request.hospitalName == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Missing hospital information')),
+      );
+      return;
+    }
+
+    await FirestoreHandler.updateStatus(
+      request.id!,
+      RequestStatus.approved,
+    );
+
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 60),
+            const Icon(Icons.check_circle,
+                color: Colors.green, size: 60),
             const SizedBox(height: 20),
             const Text(
               'Donation Accepted!',
@@ -46,33 +63,46 @@ class DonationDetailsScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 10),
-            const Text(
-              'This request has been added to your My Requests list.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-            const SizedBox(height: 25),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // إغلاق الدايلوج فقط، ثم pop للشاشة السابقة (الـ wrapper)
-                  Navigator.pop(context); // إغلاق الدايلوج
-                  Navigator.pop(context); // الرجوع للهوم (عبر الـ wrapper)
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC4001D),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 15),
+            // Hospital address info
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Go to ${request.hospitalName}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Done',
-                  style: TextStyle(color: Colors.white),
-                ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '📍 123 Blood Center Street, Medical District',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
             ),
+            const SizedBox(height: 25),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // close dialog
+                Navigator.pop(context, true); // go back + refresh
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFC4001D),
+              ),
+              child: const Text("Done"),
+            )
           ],
         ),
       ),
@@ -81,370 +111,225 @@ class DonationDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final bool isEmergency = _request['isEmergency'] ?? false;
-    final String bloodType = _request['bloodType'] ?? '?';
-    final String hospital = _request['hospital'] ?? 'Unknown Hospital';
-    final int units = _request['units'] ?? 1;
-    final String status = _request['status'] ?? 'Pending';
+    final status = request.reqStatus ?? "pending";
 
     return Scaffold(
-      backgroundColor: isDarkMode
-          ? const Color.fromARGB(255, 0, 0, 0)
-          : const Color(0xFFF8F9FA),
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        title: const Text("Donation Request"),
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          "Donation Request",
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-          // الرجوع للشاشة السابقة فقط (مش خروج من التطبيق)
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            _buildEmergencyCard(bloodType, isEmergency),
+            _buildEmergencyCard(),
             const SizedBox(height: 20),
-            _buildMapPreview(),
+            _buildHospitalCard(),
             const SizedBox(height: 20),
-            _buildHospitalCard(hospital, isDarkMode),
-            const SizedBox(height: 15),
+
+            // 📊 INFO
             Row(
               children: [
-                _buildSmallInfoCard(
-                  "QUANTITY",
-                  "$units Unit${units > 1 ? 's' : ''}",
-                  isDarkMode,
-                ),
-                const SizedBox(width: 15),
-                _buildSmallInfoCard("STATUS", status, isDarkMode),
+                _infoCard("BLOOD TYPE", request.bloodType ?? "?"),
+                const SizedBox(width: 10),
+                _infoCard("UNITS", "${isEmergency ? (request.units ?? 0) : 1}"),
               ],
             ),
+
             const SizedBox(height: 20),
-            _buildClinicalNotes(isDarkMode, isEmergency, bloodType),
+
+            _infoCard(
+              "DATE & TIME",
+              "${request.date ?? ''} • ${request.time ?? ''}",
+              expanded: false,
+            ),
+
+            const SizedBox(height: 20),
+
+            _buildQRPass(),
+
             const SizedBox(height: 30),
-            status == 'Pending'
-                ? _buildActionButtons(context)
-                : _buildAlreadyHandled(status),
-            const SizedBox(height: 20),
+
+            // 🔘 ACTIONS FLOW - Only show for critical requests
+            if (isEmergency && status == RequestStatus.pending.name)
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _updateStatus(
+                        context,
+                        RequestStatus.rejected,
+                      ),
+                      child: const Text("Reject"),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _handleAccept(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFC4001D),
+                      ),
+                      child: const Text("Accept"),
+                    ),
+                  ),
+                ],
+              )
+
+            else if (status == RequestStatus.approved.name)
+              Column(
+                children: [
+                  const Text(
+                    "Request Approved",
+                    style: TextStyle(color: Colors.green),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () => _updateStatus(
+                      context,
+                      RequestStatus.fulfilled,
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                    ),
+                    child: const Text("Mark as Fulfilled"),
+                  )
+                ],
+              )
+
+            else if (!isEmergency && status == RequestStatus.pending.name)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info, color: Colors.blue),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "This is a standard donation request. No action needed.",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+
+            else
+              Text(
+                "Request $status",
+                style: const TextStyle(color: Colors.white),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmergencyCard(String bloodType, bool isEmergency) {
-    final color = isEmergency ? const Color(0xFFC4001D) : Colors.amber;
-    final label = isEmergency ? "EMERGENCY" : "STANDARD REQUEST";
-    final subtitle = isEmergency
-        ? "Response requested within 30 mins"
-        : "Scheduled donation request";
-    final String polarity = bloodType.endsWith('-') ? 'Negative' : 'Positive';
+  // ================= UI =================
+
+  Widget _buildEmergencyCard() {
+    final color = isEmergency ? Colors.red : Colors.blue;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(118, 37, 37, 37),
+        color: Colors.grey[900],
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         children: [
-          Icon(
-            isEmergency ? Icons.error : Icons.info_outline,
-            color: color,
-            size: 35,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.white70, fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            children: [
-              Text(
-                bloodType,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                polarity.toUpperCase(),
-                style: const TextStyle(color: Colors.white70, fontSize: 9),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMapPreview() {
-    return Container(
-      height: 180,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.grey[800],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Stack(
-        children: [
-          const Center(
-            child: Icon(Icons.location_on, color: Color(0xFFC4001D), size: 50),
-          ),
-          Positioned(
-            bottom: 15,
-            left: 15,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.directions_car, color: Colors.white, size: 14),
-                  SizedBox(width: 5),
-                  Text(
-                    "2.4 km away",
-                    style: TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHospitalCard(String hospital, bool isDarkMode) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDarkMode
-            ? const Color.fromARGB(118, 37, 37, 37)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            hospital,
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Text(
-            "Main Surgical Wing",
-            style: TextStyle(color: Colors.grey, fontSize: 14),
-          ),
-          const SizedBox(height: 15),
-          const Row(
-            children: [
-              Icon(Icons.phone, color: Colors.grey, size: 18),
-              SizedBox(width: 10),
-              Text(
-                "+1 (555) 092-8834",
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallInfoCard(String title, String value, bool isDarkMode) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: isDarkMode
-              ? const Color.fromARGB(118, 37, 37, 37)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildClinicalNotes(
-    bool isDarkMode,
-    bool isEmergency,
-    String bloodType,
-  ) {
-    final notes = isEmergency
-        ? "Trauma patient currently in emergency surgery. Severe blood loss reported. $bloodType supply at facility is critically low. Immediate transfusion required."
-        : "Scheduled surgical procedure requiring $bloodType blood. Please arrive at the donation center at the specified time.";
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDarkMode
-            ? const Color.fromARGB(118, 37, 37, 37)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.assignment, color: Color(0xFFC4001D), size: 20),
-              SizedBox(width: 10),
-              Text(
-                "CLINICAL NOTES",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Text(
-            notes,
-            style: TextStyle(
-              color: isDarkMode ? Colors.white70 : Colors.black87,
-              height: 1.5,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          height: 55,
-          child: ElevatedButton(
-            onPressed: () => _handleAcceptDonation(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFC4001D),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-            ),
-            child: const Text(
-              "Accept Donation",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          height: 55,
-          child: TextButton(
-            onPressed: () {
-              allRequests[requestIndex]['status'] = 'Rejected';
-              allRequests[requestIndex]['statusColor'] = Colors.red;
-              Navigator.pop(context); // رجوع للشاشة السابقة فقط
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: const Color.fromARGB(118, 37, 37, 37),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-            ),
-            child: const Text("Decline"),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAlreadyHandled(String status) {
-    final color = status == 'Accepted' ? Colors.green : Colors.red;
-    final icon = status == 'Accepted' ? Icons.check_circle : Icons.cancel;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 24),
+          Icon(Icons.warning, color: color),
           const SizedBox(width: 10),
-          Text(
-            "Request $status",
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+          Expanded(
+            child: Text(
+              isEmergency ? "CRITICAL REQUEST" : "STANDARD REQUEST",
+              style: TextStyle(color: color),
             ),
           ),
+          Text(
+            request.bloodType ?? "?",
+            style: TextStyle(color: color, fontSize: 20),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHospitalCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.local_hospital, color: Colors.white),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              request.hospitalName ?? "Unknown Hospital",
+              style: const TextStyle(color: Colors.white),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _infoCard(String title, String value, {bool expanded = true}) {
+    final card = Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(title, style: const TextStyle(color: Colors.grey)),
+          const SizedBox(height: 5),
+          Text(value, style: const TextStyle(color: Colors.white)),
+        ],
+      ),
+    );
+    
+    return expanded ? Expanded(child: card) : card;
+  }
+
+  Widget _buildQRPass() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.qr_code_2, size: 150, color: Colors.white),
+          const SizedBox(height: 10),
+          const Divider(),
+          _row("Hospital", request.hospitalName ?? ""),
+          _row("Blood Type", request.bloodType ?? ""),
+          _row("Date", request.date ?? ""),
+          _row("Time", request.time ?? ""),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(value, style: const TextStyle(color: Colors.white)),
         ],
       ),
     );

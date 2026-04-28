@@ -189,7 +189,12 @@ class _HospitalRegistrationScreenState
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const ResponsiblePersonScreen(),
+                builder: (context) =>  ResponsiblePersonScreen(
+                  email: _emailController.text.trim(),
+                  pass: _passwordController.text.trim(),
+                  hospitalName: _nameController.text.trim(),
+                  phoneNumber: _phoneNumber.trim(),
+                ),
               ),
             );
           }

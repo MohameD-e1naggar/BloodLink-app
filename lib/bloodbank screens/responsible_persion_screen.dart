@@ -5,7 +5,24 @@ import 'package:www/bloodbank%20screens/location_screen.dart';
 // تأكد من استيراد ملف الشاشة الثالثة هنا
 
 class ResponsiblePersonScreenbb extends StatefulWidget {
-  const ResponsiblePersonScreenbb({super.key});
+
+  final String bankName;
+  final String email;
+  final String pass;
+  final String phoneNumber;
+  final String address;
+  final String workingHours;
+  const ResponsiblePersonScreenbb(
+      {
+        super.key,
+        required this.phoneNumber,
+        required this.bankName,
+        required this.email,
+        required this.pass,
+        required this.address,
+        required this.workingHours,
+
+      });
 
   @override
   State<ResponsiblePersonScreenbb> createState() =>
@@ -181,7 +198,18 @@ class _ResponsiblePersonScreenbbState extends State<ResponsiblePersonScreenbb> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                const bloodbankLocationScreen(),
+                                 bloodbankLocationScreen(
+                                  email: widget.email ,
+                                   pass: widget.pass,
+                                   phoneNumber: widget.phoneNumber,
+                                   bankName: widget.bankName,
+                                   adminName: _adminNameController.text.trim(),
+                                   adminNationalId: _nationalIdController.text.trim(),
+                                   adminPhoneNumber: _adminPhoneNumber.trim(),
+                                   workingHours: widget.workingHours,
+                                   address: widget.address,
+
+                                ),
                           ),
                         );
                       }

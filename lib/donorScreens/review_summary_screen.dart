@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import '../Backend/models/User.dart' as my_user;
 
 class ReviewSummaryScreen extends StatelessWidget {
   final String fullName;
@@ -13,10 +16,12 @@ class ReviewSummaryScreen extends StatelessWidget {
   final bool hadSurgery;
   final bool hasAnemia;
   final String lastDonation;
+  final String pass;
 
   const ReviewSummaryScreen({
     super.key,
     required this.fullName,
+    required this.pass,
     required this.email,
     required this.phone,
     required this.dob,
@@ -137,7 +142,10 @@ class ReviewSummaryScreen extends StatelessWidget {
               width: double.infinity,
               height: 60,
               child: ElevatedButton(
-                onPressed: () => _showSuccessDialog(context),
+                onPressed: () {
+                 _createAccount();
+                  _showSuccessDialog(context);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 196, 0, 29),
                   foregroundColor: Colors.white,
@@ -161,6 +169,44 @@ class ReviewSummaryScreen extends StatelessWidget {
     );
   }
 
+
+  void _createAccount()async{
+    final UserCredential credential;
+    final uid;
+    try {
+       credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: pass.trim(),
+      );
+       uid = credential.user!.uid;
+
+       await FirestoreHandler.createUser(my_user.User(
+         id: uid,
+         email: email,
+         name: fullName,
+           phoneNumber: phone,
+           donorDob:  dob,
+       donorGender: gender,
+       bloodType: bloodType,
+       weight: weight,
+       hasChronicDiseases: hasChronicDiseases,
+       hadSurgery: hadSurgery,
+           hasAnemia: hasAnemia,
+       takesMedication: takesMedication,
+       donorLastDonation: lastDonation,
+           type: my_user.UserTypes.donor.name,
+       ));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+      }
+    } catch (e) {
+      print(e);
+    }
+
+  }
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 10),

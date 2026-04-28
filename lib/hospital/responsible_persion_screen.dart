@@ -5,7 +5,17 @@ import 'package:www/hospital/location_screen.dart';
 // تأكد من استيراد ملف الشاشة الثالثة هنا
 
 class ResponsiblePersonScreen extends StatefulWidget {
-  const ResponsiblePersonScreen({super.key});
+  final String hospitalName;
+  final String email;
+  final String pass;
+  final String phoneNumber;
+  const ResponsiblePersonScreen({
+    super.key,
+    required this.phoneNumber,
+    required this.hospitalName,
+    required this.email,
+    required this.pass,
+  });
 
   @override
   State<ResponsiblePersonScreen> createState() =>
@@ -181,7 +191,16 @@ class _ResponsiblePersonScreenState extends State<ResponsiblePersonScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                const HospitalLocationScreen(),
+                                 HospitalLocationScreen(
+                                  email: widget.email,
+                                   pass: widget.pass,
+                                   hospitalName: widget.hospitalName,
+                                   phoneNumber: widget.phoneNumber,
+                                   adminName: _adminNameController.text.trim(),
+                                   adminPhoneNumber: _adminPhoneNumber.trim(),
+                                   adminNationalId: _nationalIdController.text.trim(),
+
+                                ),
                           ),
                         );
                       }

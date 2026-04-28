@@ -1,7 +1,27 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../Backend/FirestoreHandler.dart';
+import '../Backend/models/User.dart' as my_user;
+
 class HospitalLocationScreen extends StatefulWidget {
-  const HospitalLocationScreen({super.key});
+  final String hospitalName;
+  final String email;
+  final String pass;
+  final String phoneNumber;
+  final String adminName;
+  final String adminPhoneNumber;
+  final String adminNationalId;
+  const HospitalLocationScreen({
+
+    required this.hospitalName,
+    required this.email,
+    required this.pass,
+    required this.phoneNumber,
+    required this.adminName,
+    required this.adminNationalId,
+    required this.adminPhoneNumber,
+    super.key});
 
   @override
   State<HospitalLocationScreen> createState() => _HospitalLocationScreenState();
@@ -205,8 +225,9 @@ class _HospitalLocationScreenState extends State<HospitalLocationScreen> {
       child: ElevatedButton(
         onPressed: isReady
             ? () {
-                // هنا نضع الكود الذي سينقلنا لشاشة النتائج
-                print("Searching in $selectedCity, $selectedGovernorate");
+          _createAccount();
+                // // هنا نضع الكود الذي سينقلنا لشاشة النتائج
+                // print("Searching in $selectedCity, $selectedGovernorate");
               }
             : null,
         style: ElevatedButton.styleFrom(
@@ -227,5 +248,37 @@ class _HospitalLocationScreenState extends State<HospitalLocationScreen> {
         ),
       ),
     );
+  }
+
+
+  void _createAccount()async{
+    final UserCredential credential;
+    final uid;
+    try {
+      credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: widget.email,
+        password:widget.pass,
+      );
+      uid = credential.user!.uid;
+      await FirestoreHandler.createUser(my_user.User(
+        id: uid,
+        email: widget.email,
+        name: widget.hospitalName,
+        phoneNumber: widget.phoneNumber,
+        adminName: widget.adminName,
+        adminNationalId: widget.adminNationalId,
+        adminPhoneNumber: widget.adminPhoneNumber,
+        type: my_user.UserTypes.hospital.name,
+      ));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+      }
+    } catch (e) {
+      print(e);
+    }
+
   }
 }

@@ -1,16 +1,47 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/bloodbank%20screens/bloodbank_login.dart';
+import '../Backend/models/User.dart' as my_user;
 
 class BloodBankProfileScreen extends StatelessWidget {
-  const BloodBankProfileScreen({super.key});
+  final my_user.User? user;
+  
+  BloodBankProfileScreen({super.key}) : user = SharedPref.getUser();
 
   @override
   Widget build(BuildContext context) {
+    // Handle null user case
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0F0F0F),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: const Center(
+          child: Text(
+            'User data not available',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const Icon(Icons.arrow_back, color: Colors.white),
+        leading: IconButton(
+            onPressed: ()async{
+              await SharedPref.clear();
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder:(context)=> BloodBank_Login(isAdmin: false,)));
+
+            },
+            icon: Icon(Icons.logout)),
         title: const Text(
           'Blood Bank Profile',
           style: TextStyle(color: Colors.white, fontSize: 18),
@@ -68,8 +99,8 @@ class BloodBankProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              "Central City Blood Center",
+             Text(
+              user?.name ?? "",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 22,
@@ -100,13 +131,13 @@ class BloodBankProfileScreen extends StatelessWidget {
               _buildInfoTile(
                 Icons.email,
                 'EMAIL ADDRESS',
-                'contact@cityblood.org',
+                user?.email ?? "",
               ),
               _buildDivider(),
               _buildInfoTile(
                 Icons.phone,
                 'CONTACT NUMBER',
-                '+1 (555) 012-3456',
+                user?.phoneNumber ?? "",
               ),
             ]),
 
@@ -115,14 +146,14 @@ class BloodBankProfileScreen extends StatelessWidget {
             // RESPONSIBLE PERSON Section
             _buildSectionTitle('RESPONSIBLE PERSON'),
             _buildInfoCard([
-              _buildInfoTile(Icons.person, 'FULL NAME', 'Dr. Sarah Jenkins'),
+              _buildInfoTile(Icons.person, 'FULL NAME', user?.adminName ?? ""),
               _buildDivider(),
-              _buildInfoTile(Icons.badge, 'MEDICAL ID', 'BB-992831'),
+              _buildInfoTile(Icons.badge, 'MEDICAL ID', user?.adminNationalId ?? ""),
               _buildDivider(),
               _buildInfoTile(
                 Icons.smartphone,
                 'DIRECT PHONE',
-                '+1 (555) 012-9876',
+                user?.adminPhoneNumber ?? "",
               ),
             ]),
 
@@ -134,7 +165,7 @@ class BloodBankProfileScreen extends StatelessWidget {
               _buildInfoTile(
                 Icons.location_on,
                 'ADDRESS',
-                '123 Medical Plaza, Suite 400,\nMetropolis City, 54321',
+                user?.address ?? "",
               ),
               const SizedBox(height: 12),
               Container(

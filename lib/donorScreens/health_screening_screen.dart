@@ -10,6 +10,7 @@ class HealthScreeningScreen extends StatefulWidget {
   final String gender;
   final String bloodType;
   final String weight;
+  final String pass;
 
   const HealthScreeningScreen({
     super.key,
@@ -20,6 +21,7 @@ class HealthScreeningScreen extends StatefulWidget {
     required this.gender,
     required this.bloodType,
     required this.weight,
+    required this.pass
   });
 
   @override
@@ -199,6 +201,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
                     MaterialPageRoute(
                       builder: (context) => ReviewSummaryScreen(
                         fullName: widget.fullName,
+                        pass : widget.pass,
                         email: widget.email,
                         phone: widget.phone,
                         dob: widget.dob,
@@ -274,7 +277,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeThumbColor: Colors.white,
+          //activeThumbColor: Colors.white,
           activeTrackColor: const Color.fromARGB(255, 196, 0, 29),
           inactiveThumbColor: Colors.white,
           inactiveTrackColor: Color(0xFF9E9E9E).withValues(alpha: 0.3),

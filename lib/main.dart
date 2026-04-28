@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:www/welcome_screen.dart'; // تأكد من صحة المسار
+import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/welcome_screen.dart';
 import 'theme/app_theme.dart';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(MyApp());
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await SharedPref.init();
+
+   runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -38,8 +43,7 @@ class _MyAppState extends State<MyApp> {
       title: 'BloodLink',
       debugShowCheckedModeBanner: false,
 
-      // ربط الثيمات بالكلاس المنفصل
-      theme: AppTheme.light,
+      theme: AppTheme.dark,
       darkTheme: AppTheme.dark,
       themeMode: _themeMode,
 

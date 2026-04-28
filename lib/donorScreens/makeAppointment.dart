@@ -1,121 +1,116 @@
 import 'package:flutter/material.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
 import 'package:www/donorScreens/confirm_donation.dart';
 
-class BloodBank {
-  final String name;
-  final String address;
-  final String distance;
-  final String availability;
-  final String workingHours;
+import '../Backend/models/User.dart';
 
-  BloodBank({
-    required this.name,
-    required this.address,
-    required this.distance,
-    required this.availability,
-    required this.workingHours,
-  });
-}
 
 class BloodBanksScreen extends StatelessWidget {
   const BloodBanksScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final List<BloodBank> bloodBanks = [
-      BloodBank(
-        name: 'Al-Maadi Blood Bank',
-        address: 'Road 9, Maadi, Cairo',
-        distance: '1.2 km',
-        availability: 'Open Now',
-        workingHours: '09:00 AM - 10:00 PM',
-      ),
-      BloodBank(
-        name: 'Egyptian Red Crescent',
-        address: 'Nasr City, Cairo',
-        distance: '4.5 km',
-        availability: 'Open Now',
-        workingHours: '24 Hours',
-      ),
-      BloodBank(
-        name: 'Cairo University Hospital',
-        address: 'Al-Kasr Al-Aini, Giza',
-        distance: '6.8 km',
-        availability: 'Closing Soon',
-        workingHours: '08:00 AM - 04:00 PM',
-      ),
-    ];
 
-    return Scaffold(
-      // تطبيق الخلفية المتدرجة الموحدة
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(0, -0.5),
-            radius: 1.2,
-            colors: [Color(0xFF250A0A), Colors.black],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Custom AppBar
-              Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.05),
-                        padding: const EdgeInsets.all(12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+
+    return FutureBuilder(
+      future: FirestoreHandler.getUsersByType('bloodBank'),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(child: Text("Error: ${snapshot.error}")),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(child: Text("No user data")),
+          );
+        }
+
+        final List<User> bloodBanks = snapshot.data!;
+
+        return Scaffold(
+          // تطبيق الخلفية المتدرجة الموحدة
+          body: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0, -0.5),
+                radius: 1.2,
+                colors: [Color(0xFF250A0A), Colors.black],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Custom AppBar
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.05),
+                            padding: const EdgeInsets.all(12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 20),
+                        const Text(
+                          'Blood Banks',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 20),
-                    const Text(
-                      'Blood Banks',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+
+                  // Search Bar بتصميم زجاجي
+                  const SizedBox(height: 24),
+
+                  // قائمة المستشفيات
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: bloodBanks.length,
+                      itemBuilder: (context, index) {
+                        return _buildBankCard(context, bloodBanks[index]);
+                      },
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-
-              // Search Bar بتصميم زجاجي
-              const SizedBox(height: 24),
-
-              // قائمة المستشفيات
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: bloodBanks.length,
-                  itemBuilder: (context, index) {
-                    return _buildBankCard(context, bloodBanks[index]);
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      }
     );
   }
 
-  Widget _buildBankCard(BuildContext context, BloodBank bank) {
+  Widget _buildBankCard(BuildContext context, User bank) {
+    final status = getAvailabilityStatus(bank.workingHours ?? "");
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -136,7 +131,7 @@ class BloodBanksScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      bank.name,
+                      bank.name ?? "",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -145,7 +140,7 @@ class BloodBanksScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      bank.address,
+                      bank.address ?? "",
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.5),
                         fontSize: 13,
@@ -164,7 +159,7 @@ class BloodBanksScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  bank.distance,
+                  " 2.1 Km",
                   style: const TextStyle(
                     color: Color(0xFFC4001D),
                     fontWeight: FontWeight.bold,
@@ -184,7 +179,7 @@ class BloodBanksScreen extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                bank.workingHours,
+                bank.workingHours ?? "",
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.4),
                   fontSize: 12,
@@ -194,19 +189,26 @@ class BloodBanksScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color:
-                      (bank.availability == 'Open Now'
-                              ? Colors.green
-                              : Colors.orange)
-                          .withOpacity(0.1),
+                  color: (status == 'Open Now'
+                      ? Colors.green
+                      : status == 'Closing Soon'
+                      ? Colors.orange
+                      : status == 'Opening Soon'
+                      ? Colors.blue
+                      : Colors.red)
+                      .withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  bank.availability,
+                  status,
                   style: TextStyle(
-                    color: bank.availability == 'Open Now'
+                    color: status == 'Open Now'
                         ? Colors.green
-                        : Colors.orange,
+                        : status == 'Closing Soon'
+                        ? Colors.orange
+                        : status == 'Opening Soon'
+                        ? Colors.blue
+                        : Colors.red,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -224,7 +226,7 @@ class BloodBanksScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        MakeAppointmentScreen(hospitalName: bank.name),
+                        MakeAppointmentScreen(bloodBank: bank),
                   ),
                 );
               },
@@ -248,5 +250,33 @@ class BloodBanksScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+  String getAvailabilityStatus(String workingHours) {
+    final cleaned = workingHours.replaceAll(' ', '');
+    final parts = cleaned.split('-');
+
+    if (parts.length != 2) return 'Closed';
+
+    final from = int.tryParse(parts[0]);
+    final to = int.tryParse(parts[1]);
+
+
+    if (from == null || to == null) return 'Closed';
+
+    final now = DateTime.now().hour-12;
+
+
+    if (now >= from && now < to) {
+      if (now == to - 1) {
+        return 'Closing Soon';
+      }
+      return 'Open Now';
+    }
+
+    if (now == from - 1) {
+      return 'Opening Soon';
+    }
+
+    return 'Closed';
   }
 }

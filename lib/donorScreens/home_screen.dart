@@ -1,9 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/Backend/models/Request.dart';
 import 'package:www/donorScreens/makeAppointment.dart';
 import 'package:www/data/blood_data.dart';
 import 'package:www/data/requests_store.dart';
 import 'Donation_Request_Details.dart';
 import 'login_screen.dart';
+import '../Backend/models/User.dart' as my_user;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,37 +18,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
-  // ===== إحصائيات حقيقية من globalMyRequests =====
 
-  // الطلبات النشطة = كل الطلبات اللي المتبرع عملها
-  int get activeRequestsCount => allRequests.length;
 
-  // Pending = الطلبات اللي status بتاعها PENDING
-  int get pendingCount =>
-      allRequests.where((r) => r['status'] == 'PENDING').length;
-
-  // Fulfilled = الطلبات المؤكدة (CONFIRMED أو URGENT)
-  int get fulfilledCount => allRequests
-      .where((r) => r['status'] == 'CONFIRMED' || r['status'] == 'URGENT')
-      .length;
 
   // الطلبات الطارئة من allRequests (اللي بعتها المستشفيات)
-  List<BloodRequest> get urgentRequests {
-    return allRequests.map((req) {
-      final bool isEmergency = req['isEmergency'] ?? false;
-      final String status = isEmergency ? 'CRITICAL' : 'NEEDED';
-      final Color color = isEmergency ? Colors.red : Colors.amber;
-      final int units = req['units'] ?? 1;
 
-      return BloodRequest(
-        bloodType: req['bloodType'] ?? '?',
-        status: status,
-        distance: req['hospital'] ?? 'Unknown Hospital',
-        details: 'Needs $units unit${units > 1 ? 's' : ''}',
-        themeColor: color,
-      );
-    }).toList();
-  }
 
   @override
   void didChangeDependencies() {
@@ -90,6 +69,41 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       ),
     );
   }
+  Future<List<dynamic>> loadData() {
+    var uid = FirebaseAuth.instance.currentUser!.uid;
+    return Future.wait([
+      FirestoreHandler.getUser(uid) ,
+      FirestoreHandler.getReqByDonorId(uid),
+      FirestoreHandler.getCriticalReq(),
+    ]);
+  }
+
+
+  Map<String,int> countPendingRequests(List<Request> requests) {
+    int pending = 0;
+    int approved = 0;
+    int fulfilled = 0;
+
+    for (var req in requests) {
+      if (req.reqStatus == RequestStatus.pending.name) {
+        pending++;
+      }else if (req.reqStatus == RequestStatus.approved.name){
+
+        approved++;
+      }else if (req.reqStatus == RequestStatus.fulfilled.name){
+        fulfilled++;
+      }
+
+    }
+
+    return {
+      'pending' : pending,
+      "approved" : approved,
+      'fulfilled' : fulfilled,
+
+
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,51 +114,87 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         if (didPop) return;
         await _showLogoutDialog(context);
       },
-      child: Scaffold(
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0, -0.5),
-              radius: 1.2,
-              colors: [Color(0xFF250A0A), Colors.black],
-            ),
-          ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildAppBar(),
-                  const SizedBox(height: 10),
-                  _buildStatsSection(),
-                  const SizedBox(height: 20),
-                  _buildDonateToBanksButton(context),
-                  const SizedBox(height: 25),
-                  _buildSectionHeader('Urgent Requests'),
-                  const SizedBox(height: 15),
-                  _buildUrgentRequestsGrid(),
-                  const SizedBox(height: 30),
-                ],
+      child: FutureBuilder(
+        future: loadData(),
+        builder: (context, snapshot) {
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              backgroundColor: Colors.black,
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Scaffold(
+              backgroundColor: Colors.black,
+              body: Center(child: Text("Error: ${snapshot.error}")),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data == null) {
+            return const Scaffold(
+              backgroundColor: Colors.black,
+              body: Center(child: Text("No user data")),
+            );
+          }
+          var requests = snapshot.data![1] as List<Request>;
+          var user = snapshot.data![0] as my_user.User;
+          var criticalRequests = snapshot.data![2] as List<Request>;
+
+
+           SharedPref.setReqs(requests);
+           SharedPref.setUser(user);
+
+          Map<String, int> status = countPendingRequests(requests);
+
+          return Scaffold(
+            body: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0, -0.5),
+                  radius: 1.2,
+                  colors: [Color(0xFF250A0A), Colors.black],
+                ),
+              ),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAppBar(user.name ?? "",requests.length),
+                      const SizedBox(height: 10),
+                      _buildStatsSection(status),
+                      const SizedBox(height: 20),
+                      _buildDonateToBanksButton(context),
+                      const SizedBox(height: 25),
+                      _buildSectionHeader('Urgent Requests'),
+                      const SizedBox(height: 15),
+                      _buildUrgentRequestsGrid(criticalRequests),
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }
       ),
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(String name,int reqNum) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Mohamed Ehab',
+           Text(
+            name,
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -167,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   size: 24,
                 ),
               ),
-              if (pendingCount > 0)
+              if (reqNum > 0)
                 Positioned(
                   top: 8,
                   right: 8,
@@ -189,7 +239,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   // ===== القسم الإحصائي الحقيقي =====
-  Widget _buildStatsSection() {
+  Widget _buildStatsSection(Map<String,int> status) {
+
     return Column(
       children: [
         // كارت Active Requests الرئيسي
@@ -209,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               ),
               const SizedBox(height: 5),
               Text(
-                '$activeRequestsCount',
+                status['approved'].toString(),
                 style: const TextStyle(
                   color: Color(0xFFE53935),
                   fontSize: 42,
@@ -229,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 iconColor: const Color(0xFFFFB300),
                 iconBg: const Color(0xFF2A2000),
                 label: 'Pending',
-                value: '$pendingCount',
+                value: status['pending'].toString(),
               ),
             ),
             const SizedBox(width: 12),
@@ -239,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 iconColor: const Color(0xFF43A047),
                 iconBg: const Color(0xFF0A2A0A),
                 label: 'Fulfilled',
-                value: '$fulfilledCount',
+                value: status['fulfilled'].toString(),
               ),
             ),
           ],
@@ -371,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
-  Widget _buildUrgentRequestsGrid() {
+  Widget _buildUrgentRequestsGrid(List<Request> urgentRequests) {
     if (urgentRequests.isEmpty) {
       return Center(
         child: Padding(
@@ -409,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
-  Widget _buildRequestCard(BloodRequest request, int index) {
+  Widget _buildRequestCard(Request request, int index) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -425,9 +476,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                request.bloodType,
+                request.bloodType ?? "",
                 style: TextStyle(
-                  color: request.themeColor,
+                  color: null,
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
@@ -435,13 +486,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: request.themeColor.withOpacity(0.1),
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Text(
-                  request.status,
+                  request.urgency ?? "",
                   style: TextStyle(
-                    color: request.themeColor,
+                    color: null,
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
@@ -450,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             ],
           ),
           Text(
-            '${request.distance}\n${request.details}',
+            '${request.units}\n${request.hospitalName}',
             style: TextStyle(
               color: Colors.white.withOpacity(0.5),
               fontSize: 11,
@@ -466,14 +517,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        DonationDetailsScreen(requestIndex: index),
+                        DonationDetailsScreen( request: request,),
                   ),
                 );
                 // تحديث الإحصائيات بعد الرجوع من تفاصيل الطلب
                 if (mounted) setState(() {});
               },
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: request.themeColor.withOpacity(0.5)),
+                side: BorderSide(color: Colors.transparent),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -481,7 +532,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               child: Text(
                 'Donate Now',
                 style: TextStyle(
-                  color: request.themeColor,
+                  color: null,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),

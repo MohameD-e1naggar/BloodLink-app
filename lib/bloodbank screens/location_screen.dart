@@ -1,7 +1,33 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../Backend/FirestoreHandler.dart';
+import '../Backend/models/User.dart' as my_user;
+
 class bloodbankLocationScreen extends StatefulWidget {
-  const bloodbankLocationScreen({super.key});
+
+  final String bankName;
+  final String email;
+  final String pass;
+  final String phoneNumber;
+  final String adminName;
+  final String adminPhoneNumber;
+  final String adminNationalId;
+  final String address;
+  final String workingHours;
+  const bloodbankLocationScreen({
+    super.key,
+    required this.bankName,
+    required this.email,
+    required this.pass,
+    required this.phoneNumber,
+    required this.adminName,
+    required this.adminNationalId,
+    required this.adminPhoneNumber,
+    required this.address,
+    required this.workingHours,
+
+  });
 
   @override
   State<bloodbankLocationScreen> createState() =>
@@ -206,8 +232,10 @@ class _bloodbankLocationScreenState extends State<bloodbankLocationScreen> {
       child: ElevatedButton(
         onPressed: isReady
             ? () {
-                // هنا نضع الكود الذي سينقلنا لشاشة النتائج
-                print("Searching in $selectedCity, $selectedGovernorate");
+          _createAccount();
+
+                // // هنا نضع الكود الذي سينقلنا لشاشة النتائج
+                // print("Searching in $selectedCity, $selectedGovernorate");
               }
             : null,
         style: ElevatedButton.styleFrom(
@@ -229,4 +257,41 @@ class _bloodbankLocationScreenState extends State<bloodbankLocationScreen> {
       ),
     );
   }
+
+
+
+  void _createAccount()async {
+    final UserCredential credential;
+    final uid;
+    try {
+      credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: widget.email,
+        password: widget.pass,
+      );
+      uid = credential.user!.uid;
+      await FirestoreHandler.createUser(my_user.User(
+          id: uid,
+          email: widget.email,
+          name: widget.bankName,
+          phoneNumber: widget.phoneNumber,
+          adminName: widget.adminName,
+        adminNationalId: widget.adminNationalId,
+        adminPhoneNumber: widget.adminPhoneNumber,
+        address: widget.address,
+        workingHours: widget.workingHours,
+        type: my_user.UserTypes.bloodBank.name,
+      ));
+
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+      }
+    } catch (e) {
+      print(e);
+    }
+
+  }
+
 }

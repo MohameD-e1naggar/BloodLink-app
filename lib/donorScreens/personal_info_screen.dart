@@ -6,12 +6,14 @@ class PersonalInfoScreen extends StatefulWidget {
   final String fullName;
   final String email;
   final String phone;
+  final String pass;
 
   const PersonalInfoScreen({
     super.key,
     required this.fullName,
     required this.email,
     required this.phone,
+    required this.pass,
   });
 
   @override
@@ -132,7 +134,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             _buildLabel('GENDER'),
             DropdownButtonFormField<String>(
               dropdownColor: const Color.fromARGB(255, 37, 37, 37),
-              initialValue: _selectedGender,
+
+              //initialValue: _selectedGender,
               icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
               items: ['Male', 'Female'].map((String value) {
                 return DropdownMenuItem<String>(
@@ -236,10 +239,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                             fullName: widget.fullName,
                             email: widget.email,
                             phone: widget.phone,
+                            pass: widget.pass,
                             dob: _dobController.text,
                             gender: _selectedGender ?? "Not Selected",
                             bloodType: _selectedBloodType!,
                             weight: _weightController.text,
+
                           ),
                         ),
                       );

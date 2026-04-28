@@ -1,4 +1,10 @@
+import 'dart:ffi';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/Backend/models/Request.dart';
 import 'package:www/data/requests_store.dart'; // استيراد ملف التخزين الموحد
 
 class RequestBloodUnitsScreen extends StatefulWidget {
@@ -111,26 +117,28 @@ class _RequestBloodUnitsScreenState extends State<RequestBloodUnitsScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFC4001D),
                 ),
-                onPressed: () {
+                onPressed: () async{
                   if (_selectedBloodType == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please select blood type')),
                     );
                     return;
                   }
+                  var uid = FirebaseAuth.instance.currentUser?.uid;
+                  var name = SharedPref.getUser()?.name ?? "";
 
-                  // إضافة البيانات للقائمة الموحدة (allRequests)
-                  setState(() {
-                    allRequests.add({
-                      'bloodType': _selectedBloodType!,
-                      'units': int.tryParse(_quantityController.text) ?? 1,
-                      'status': 'Pending',
-                      'statusColor': Colors.blue,
-                      'hospital': 'Main Hospital',
-                      'time': 'Just now',
-                      'isEmergency': _isStatHigh,
-                    });
-                  });
+                  await FirestoreHandler.createReq(Request(
+                    reqSender: ReqSender.hospital.name,
+                    reqStatus: RequestStatus.pending.name,
+                    bloodType: _selectedBloodType,
+                    urgency: _isStatHigh ? Urgency.critical.name : Urgency.normal.name,
+                    date: DateTime.now().toIso8601String().split('T').first,
+                    hospitalId: uid,
+                    units: int.parse(_quantityController.text),
+                    time: TimeOfDay.now().format(context),
+                    hospitalName: name,
+
+                  ));
                   Navigator.pop(context); // العودة للشاشة السابقة
                 },
                 child: const Text(

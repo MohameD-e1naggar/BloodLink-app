@@ -1,10 +1,15 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/Backend/models/Request.dart';
+import '../Backend/models/User.dart' as my_user;
 import 'request_screen.dart';
 
 class MakeAppointmentScreen extends StatefulWidget {
-  final String hospitalName;
-  const MakeAppointmentScreen({super.key, required this.hospitalName});
+  final my_user.User bloodBank;
+  const MakeAppointmentScreen({super.key, required this.bloodBank});
 
   @override
   State<MakeAppointmentScreen> createState() => _MakeAppointmentScreenState();
@@ -14,24 +19,52 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
   DateTime selectedDate = DateTime.now();
   String selectedTime = "10:00 AM";
 
-  final List<String> times = [
-    "09:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "01:00 PM",
-    "02:00 PM",
-  ];
 
-  void _confirmBooking() {
-    globalMyRequests.add({
-      'hospital': widget.hospitalName,
-      'type': 'O+',
-      'date': DateFormat('EEEE, d MMMM yyyy').format(selectedDate),
-      'time': selectedTime,
-      'status': 'PENDING',
-      'donors': '0',
-    });
+  String _twoDigits(int n) => n.toString().padLeft(2, '0');
+  String _formatTime(int hour) {
+    if (hour < 12) {
+      return '${_twoDigits(hour)}:00 AM';
+    } else if (hour == 12) {
+      return '12:00 PM';
+    } else {
+      return '${_twoDigits(hour - 12)}:00 PM';
+    }
+  }
+  List<String> generateTimes(String workingHours) {
+    final cleaned = workingHours.replaceAll(' ', '');
+    final parts = cleaned.split('-');
+
+    if (parts.length != 2) return [];
+
+    final from = int.tryParse(parts[0]);
+    final to = int.tryParse(parts[1]);
+
+    if (from == null || to == null) return [];
+
+    List<String> times = [];
+
+    for (int i = from; i <= to; i++) {
+      times.add(_formatTime(i));
+    }
+
+    return times;
+  }
+
+
+  void _confirmBooking() async {
+    var uid = FirebaseAuth.instance.currentUser!.uid;
+    var bloodType = SharedPref.getUser()?.bloodType;
+    await FirestoreHandler.createReq(Request(
+      bloodBankId: widget.bloodBank.id,
+      donorId: uid,
+      time: selectedTime,
+      date: selectedDate.toIso8601String().split('T').first,
+      bloodBankName: widget.bloodBank.name,
+      reqStatus: RequestStatus.pending.name,
+      reqSender: ReqSender.donor.name,
+      urgency: Urgency.normal.name,
+      bloodType: bloodType,
+    ));
 
     _showSuccessDialog();
   }
@@ -87,7 +120,7 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.hospitalName,
+              widget.bloodBank.name ?? "",
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 22,
@@ -131,7 +164,7 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
             Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: times.map((time) {
+              children: generateTimes(widget.bloodBank.workingHours ?? "").map((time) {
                 bool isSelected = selectedTime == time;
                 return ChoiceChip(
                   label: Text(

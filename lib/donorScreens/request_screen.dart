@@ -1,8 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'my_requestDetail.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/Backend/models/Request.dart';
+import '../Backend/models/User.dart' as my_user;
+import 'Donation_Request_Details.dart';
 
 // المخزن العام للطلبات
-List<Map<String, String>> globalMyRequests = [];
+
 
 class MyRequestsScreen extends StatefulWidget {
   const MyRequestsScreen({super.key});
@@ -20,76 +25,71 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false, // إزالة زر الرجوع التلقائي
-        title: const Text(
-          'My Requests',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: () => setState(() {}),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Active Appointments',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+    var requests = SharedPref.getReqs();
+    var user = SharedPref.getUser() ?? my_user.User(type: 'donor');
+
+        return Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            automaticallyImplyLeading: false, // إزالة زر الرجوع التلقائي
+            title: const Text(
+              'My Requests',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: () => setState(() {}),
               ),
+            ],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Active Appointments',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: requests.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "No donation requests yet.",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: requests.length,
+                          itemBuilder: (context, index) {
+                            final req = requests[index];
+                            return _buildMyRequestCard(
+                              context,
+                             req: req,
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: globalMyRequests.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "No donation requests yet.",
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    )
-                  : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: globalMyRequests.length,
-                      itemBuilder: (context, index) {
-                        final req = globalMyRequests[index];
-                        return _buildMyRequestCard(
-                          context,
-                          hospital: req['hospital']!,
-                          type: req['type']!,
-                          status: req['status']!,
-                          date: req['date']!,
-                          time: req['time'] ?? "Not Set",
-                          donors: req['donors'] ?? '0',
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
+          ),
+        );
+
+
   }
 
   Widget _buildMyRequestCard(
     BuildContext context, {
-    required String hospital,
-    required String type,
-    required String status,
-    required String date,
-    required String time,
-    required String donors,
+    required Request req
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -109,7 +109,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      hospital,
+                      req.bloodBankName ?? "",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -118,7 +118,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "$date • $time",
+                      "${req.date} • ${req.time}",
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
@@ -131,7 +131,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  type,
+                  req.bloodType ?? "",
                   style: const TextStyle(
                     color: Color(0xFFC4001D),
                     fontWeight: FontWeight.bold,
@@ -150,14 +150,13 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DonationDetailsScreen(
-                          hospitalName: hospital,
-                          bloodType: type,
-                          date: date,
-                          time: time,
-                        ),
+                        builder: (_) => DonationDetailsScreen(request: req),
                       ),
-                    );
+                    ).then((value) {
+                      if (value == true) {
+                        setState(() {}); // reload data
+                      }
+                    });
                     if (mounted) setState(() {});
                   },
                   style: ElevatedButton.styleFrom(

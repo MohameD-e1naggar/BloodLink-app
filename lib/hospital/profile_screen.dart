@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class profile extends StatelessWidget {
@@ -6,6 +7,7 @@ class profile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       backgroundColor: const Color(0xFF0F0F0F),
       body: SingleChildScrollView(
         child: Column(
@@ -68,7 +70,10 @@ class profile extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () async{
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pop(context);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1A1A1A),
                   minimumSize: const Size(double.infinity, 55),

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/donorScreens/basic_info_screen.dart';
 import 'package:www/donorScreens/wrapper.dart';
@@ -22,10 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         // زر الرجوع يروح لـ role selection
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
-        );
+        Navigator.pop(context);
       },
       child: Scaffold(
         body: Container(
@@ -140,13 +138,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MainWrapper(),
-                            ),
-                          );
+                        onPressed: (){
+                          login();
+                          // Navigator.pushReplacement(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => const MainWrapper(),
+                          //   ),
+                          // );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
@@ -209,6 +208,41 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void login() async {
+    try {
+      final credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+
+      if (credential.user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainWrapper(),
+          ),
+        );
+      }
+
+    } on FirebaseAuthException catch (e) {
+      String message = 'Something went wrong';
+
+      if (e.code == 'user-not-found') {
+        message = 'No user found for that email';
+      } else if (e.code == 'wrong-password') {
+        message = 'Wrong password';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email format';
+      }
+
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 4),

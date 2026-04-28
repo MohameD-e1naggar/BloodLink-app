@@ -1,6 +1,15 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:www/Backend/models/Inventory.dart';
+import 'package:www/Backend/models/Request.dart';
 
+import '../Backend/FirestoreHandler.dart';
+import '../Backend/cash/shared_pref.dart';
+import '../Backend/models/User.dart' as my_user;
+
+ValueNotifier<bool> refreshHome = ValueNotifier(false);
 class BloodBankHomeScreen extends StatefulWidget {
+
   const BloodBankHomeScreen({super.key});
 
   @override
@@ -8,16 +17,8 @@ class BloodBankHomeScreen extends StatefulWidget {
 }
 
 class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
-  final Map<String, int> _bloodStock = {
-    'A+': 45,
-    'A-': 12,
-    'B+': 28,
-    'B-': 5,
-    'O+': 55,
-    'O-': 8,
-    'AB+': 25,
-    'AB-': 3,
-  };
+  Map<String, int> _bloodStock = {};
+  late var uid;
 
   Map<String, dynamic> _getStatus(int units) {
     if (units <= 10) {
@@ -106,19 +107,39 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: () {
+              onPressed: () async {
                 if (selectedType != null && _amountController.text.isNotEmpty) {
+
                   int amount = int.tryParse(_amountController.text) ?? 0;
-                  setState(() {
-                    if (isAdding) {
-                      _bloodStock[selectedType!] =
-                          _bloodStock[selectedType!]! + amount;
-                    } else {
-                      _bloodStock[selectedType!] =
-                          (_bloodStock[selectedType!]! - amount).clamp(0, 9999);
-                    }
-                  });
+
+                  final ref = FirestoreHandler.getInventoryDoc(uid);
+                  final doc = await ref.get();
+                  final inventory = doc.data()!;
+
+                  Map<String, int> updated = inventory.toBloodMap();
+
+                  if (isAdding) {
+                    updated[selectedType!] =
+                        (updated[selectedType!] ?? 0) + amount;
+                  } else {
+                    updated[selectedType!] =
+                        ((updated[selectedType!] ?? 0) - amount).clamp(0, 9999);
+                  }
+
+                  await ref.set(Inventory(
+                    aPos: updated['A+'],
+                    aNeg: updated['A-'],
+                    bPos: updated['B+'],
+                    bNeg: updated['B-'],
+                    oPos: updated['O+'],
+                    oNeg: updated['O-'],
+                    abPos: updated['AB+'],
+                    abNeg: updated['AB-'],
+                  ));
+
                   Navigator.pop(context);
+
+                  setState(() {});
                 }
               },
               child: const Text(
@@ -150,98 +171,152 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    uid = FirebaseAuth.instance.currentUser!.uid;
+  }
+
+
+  Future<List<dynamic>> loadData() {
+    return Future.wait([
+      FirestoreHandler.getUser(uid) ,
+      FirestoreHandler.getInventory(uid),
+    ]);
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 196, 0, 29),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.water_drop, color: Colors.white, size: 20),
-          ),
-        ),
-        title: const Text(
-          'City Central Blood Bank',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationsScreen(),
-                ),
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: refreshHome,
+      builder: (context, value, _) {
+        return FutureBuilder(
+          future: loadData(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                backgroundColor: Colors.black,
+                body: Center(child: CircularProgressIndicator()),
               );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Live Inventory',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            }
+        
+            if (snapshot.hasError) {
+              return Scaffold(
+                backgroundColor: Colors.black,
+                body: Center(child: Text("Error: ${snapshot.error}")),
+              );
+            }
+        
+            if (!snapshot.hasData || snapshot.data == null) {
+              return const Scaffold(
+                backgroundColor: Colors.black,
+                body: Center(child: Text("No user data")),
+              );
+            }
+            var inventory = snapshot.data![1] as Inventory;
+            var user = snapshot.data![0] as my_user.User;
+        
+            _bloodStock = inventory.toBloodMap();
+        
+             SharedPref.setUser(user);
+        
+        
+            return Scaffold(
+              backgroundColor: const Color(0xFF0F0F0F),
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 196, 0, 29),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.water_drop, color: Colors.white, size: 20),
+                  ),
+                ),
+                title: const Text(
+                  'City Central Blood Bank',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
-            ),
-            const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.1,
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Live Inventory',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.1,
+                      ),
+                      itemCount: _bloodStock.length,
+                      itemBuilder: (context, index) {
+                        String type = _bloodStock.keys.elementAt(index);
+                        int count = _bloodStock[type]!;
+                        var status = _getStatus(count);
+                        return _buildBloodCard(
+                          type: type,
+                          count: count.toString(),
+                          status: status['label'],
+                          color: status['color'],
+                          progress: status['progress'],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    // زر التحكم بالمخزون فقط
+                    InkWell(
+                      onTap: _showInventoryDialog,
+                      child: _buildActionBtn(
+                        'MANAGE INVENTORY',
+                        Icons.edit_calendar_rounded,
+                        const Color.fromARGB(255, 196, 0, 29),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              itemCount: _bloodStock.length,
-              itemBuilder: (context, index) {
-                String type = _bloodStock.keys.elementAt(index);
-                int count = _bloodStock[type]!;
-                var status = _getStatus(count);
-                return _buildBloodCard(
-                  type: type,
-                  count: count.toString(),
-                  status: status['label'],
-                  color: status['color'],
-                  progress: status['progress'],
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-            // زر التحكم بالمخزون فقط
-            InkWell(
-              onTap: _showInventoryDialog,
-              child: _buildActionBtn(
-                'MANAGE INVENTORY',
-                Icons.edit_calendar_rounded,
-                const Color.fromARGB(255, 196, 0, 29),
-              ),
-            ),
-          ],
-        ),
-      ),
+            );
+          }
+        );
+      }
     );
   }
 

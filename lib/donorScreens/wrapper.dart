@@ -17,7 +17,7 @@ class _MainWrapperState extends State<MainWrapper> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const MyRequestsScreen(),
-    const ProfileSettingsScreen(),
+     ProfileSettingsScreen(),
   ];
 
   // تحديث الشاشة لما نرجع إليها من أي مكان
@@ -62,7 +62,6 @@ class _MainWrapperState extends State<MainWrapper> {
     );
 
     if (shouldLogout == true) {
-      globalMyRequests.clear();
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,

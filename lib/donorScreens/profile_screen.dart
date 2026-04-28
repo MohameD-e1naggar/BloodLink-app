@@ -1,107 +1,133 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/donorScreens/login_screen.dart';
+import '../Backend/models/User.dart' as my_user;
 // لا نحتاج Navigator.pushAndRemoveUntil هنا - الـ wrapper بيتحكم في الرجوع
 
-class ProfileSettingsScreen extends StatelessWidget {
-  const ProfileSettingsScreen({super.key});
+class ProfileSettingsScreen extends StatefulWidget {
+   ProfileSettingsScreen({super.key});
 
   @override
+  State<ProfileSettingsScreen> createState() => _ProfileSettingsScreenState();
+}
+
+class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
+  late String name;
+  late String id;
+  late my_user.User user;
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading:
-            false, // إزالة زر الرجوع - الـ BottomNav بيتحكم
-        title: const Text(
-          'Profile Settings',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              'Save',
+    user = SharedPref.getUser() ?? my_user.User(type: 'donor');
+        return Scaffold(
+          backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+          appBar: AppBar(
+            leading: IconButton(
+                onPressed: () async {
+                  SharedPref.clear();
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder:(context)=> LoginScreen()));
+                },
+                icon: Icon(Icons.logout)),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            automaticallyImplyLeading:
+                false, // إزالة زر الرجوع - الـ BottomNav بيتحكم
+            title: const Text(
+              'Profile Settings',
               style: TextStyle(
-                color: Color.fromARGB(255, 196, 0, 29),
-                fontSize: 16,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
             ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            _buildAvatarSection(),
-            const SizedBox(height: 30),
-            _buildSectionHeader(Icons.person_outline, 'PERSONAL INFO'),
-            _buildInfoCard([
-              _buildInfoTile('Full Name', 'Mohamed Ehab Mohamed Shaaban'),
-              _buildDivider(),
-              _buildInfoTile('Email Address', 'Mohamedehab9922@gmail.com'),
-              _buildDivider(),
-              _buildInfoTile('Phone Number', '+201234567890'),
-            ]),
-            const SizedBox(height: 25),
-            _buildSectionHeader(
-              Icons.medical_services_outlined,
-              'MEDICAL INFO',
-            ),
-            _buildInfoCard([
-              _buildInfoTile('Blood Type', 'O Positive (O+)'),
-              _buildDivider(),
-              _buildInfoTile('Last Donation', 'Oct 12, 2023'),
-              _buildDivider(),
-              _buildInfoTile(
-                'Medical Conditions',
-                'None reported',
-                isLast: true,
-              ),
-            ]),
-            const SizedBox(height: 25),
-            _buildSectionHeader(Icons.location_on_outlined, 'LOCATION'),
-            _buildInfoCard([
-              const ListTile(
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 5,
-                ),
-                title: Text(
-                  'Preferred Donation Center',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-                subtitle: Text(
-                  'Al-Maadi Blood Bank',
+            centerTitle: true,
+            actions: [
+              TextButton(
+                onPressed: () {},
+                child: const Text(
+                  'Save',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
+                    color: Color.fromARGB(255, 196, 0, 29),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                trailing: Icon(
-                  Icons.map_outlined,
-                  color: Colors.grey,
-                  size: 20,
-                ),
               ),
-            ]),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                _buildAvatarSection(user.name ?? "", user.id ?? ""),
+                const SizedBox(height: 30),
+                _buildSectionHeader(Icons.person_outline, 'PERSONAL INFO'),
+                _buildInfoCard([
+                  _buildInfoTile('Full Name', user.name ?? ""),
+                  _buildDivider(),
+                  _buildInfoTile('Email Address', user.email ??""),
+                  _buildDivider(),
+                  _buildInfoTile('Phone Number', user.phoneNumber ??""),
+                ]),
+                const SizedBox(height: 25),
+                _buildSectionHeader(
+                  Icons.medical_services_outlined,
+                  'MEDICAL INFO',
+                ),
+                _buildInfoCard([
+                  _buildInfoTile('Blood Type', user.bloodType ??""),
+                  _buildDivider(),
+                  _buildInfoTile('Last Donation', user.donorLastDonation ??""),
+                  _buildDivider(),
+                  _buildInfoTile(
+                    'Medical Conditions',
+                    "Takes Medication: ${user.takesMedication ??false ?"Yes":"No"}\n"
+                        "Had Surgery: ${user.hadSurgery ??false ?"Yes":"No" }\n"
+                        "Has Anemia: ${user.hasAnemia ??false ?"Yes":"No" }\n"
+                        "Has Chronic Diseases: ${user.hasChronicDiseases ??false ?"Yes":"No" }\n",
+                    isLast: true,
+                  ),
+                ]),
+                const SizedBox(height: 25),
+                _buildSectionHeader(Icons.location_on_outlined, 'LOCATION'),
+                _buildInfoCard([
+                  const ListTile(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 5,
+                    ),
+                    title: Text(
+                      'Preferred Donation Center',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    subtitle: Text(
+                      'Al-Maadi Blood Bank',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: Icon(
+                      Icons.map_outlined,
+                      color: Colors.grey,
+                      size: 20,
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        );
+      }
   }
 
-  Widget _buildAvatarSection() {
+  Widget _buildAvatarSection(String name,String id) {
     return Column(
       children: [
         Stack(
@@ -138,16 +164,16 @@ class ProfileSettingsScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 15),
-        const Text(
-          'Mohamed Ehab',
+         Text(
+          name,
           style: TextStyle(
             color: Colors.white,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const Text(
-          'Donor ID: BL-8829',
+         Text(
+          'Donor ID: $id',
           style: TextStyle(color: Colors.grey, fontSize: 14),
         ),
       ],
@@ -216,4 +242,4 @@ class ProfileSettingsScreen extends StatelessWidget {
       endIndent: 15,
     );
   }
-}
+

@@ -16,6 +16,10 @@ class _bloodbank_registrationState extends State<bloodbank_registration> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _fromHourController = TextEditingController();
+  final _toHourController = TextEditingController();
+
 
   String _phoneNumber = '';
   bool _isPasswordVisible = false;
@@ -26,6 +30,9 @@ class _bloodbank_registrationState extends State<bloodbank_registration> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+     _fromHourController.dispose();
+     _toHourController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -93,6 +100,62 @@ class _bloodbank_registrationState extends State<bloodbank_registration> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 20),
+                _buildInputField(
+                  label: 'Address',
+                  hint: 'Road 9, Maadi, Cairo',
+                  icon: Icons.location_on_outlined,
+                  controller: _addressController,
+                  isDark: isDarkMode,
+                  keyboardType: TextInputType.streetAddress,
+                     validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Required';
+                    }
+                    return null;
+                  },
+
+                ),
+                const SizedBox(height: 20),
+                Text("Working Hours"),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInputField(
+                        label: 'From',
+                        hint: 'e.g. 2',
+                        icon: Icons.access_time,
+                        controller: _fromHourController,
+                        isDark: isDarkMode,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Required';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildInputField(
+                        label: 'To',
+                        hint: 'e.g. 4',
+                        icon: Icons.access_time_filled,
+                        controller: _toHourController,
+                        isDark: isDarkMode,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Required';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
 
@@ -187,7 +250,14 @@ class _bloodbank_registrationState extends State<bloodbank_registration> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const ResponsiblePersonScreenbb(),
+                builder: (context) => ResponsiblePersonScreenbb(
+                  email: _emailController.text.trim(),
+                  pass: _passwordController.text.trim(),
+                  bankName: _nameController.text.trim(),
+                  phoneNumber: _phoneNumber.trim(),
+                  address: _addressController.text.trim(),
+                  workingHours: "${_fromHourController.text.trim()} - ${_toHourController.text.trim()}",
+                ),
               ),
             );
           }

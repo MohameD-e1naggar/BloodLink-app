@@ -17,7 +17,7 @@ class _BloodBankWrapperState extends State<BloodBankWrapper> {
   final List<Widget> _pages = [
     const BloodBankHomeScreen(), // شاشة المخزون (Inventory)
     const BloodBankRequestsScreen(), // شاشة الطلبات (الجديدة)
-    const BloodBankProfileScreen(), // شاشة البروفايل (التي صممناها سابقاً)
+    BloodBankProfileScreen(), // شاشة البروفايل (التي صممناها سابقاً)
   ];
 
   @override

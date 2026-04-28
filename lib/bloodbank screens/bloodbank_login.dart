@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/bloodbank%20screens/bb_wrapper.dart';
 import 'package:www/bloodbank%20screens/bloodbank_registration.dart';
@@ -95,12 +96,14 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const BloodBankWrapper(),
-                          ),
-                        );
+                        login();
+
+                        // Navigator.pushReplacement(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => const BloodBankWrapper(),
+                        //   ),
+                        // );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -154,6 +157,43 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
         ),
       ),
     );
+  }
+
+
+
+  void login() async {
+    try {
+      final credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+
+      if (credential.user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const BloodBankWrapper(),
+          ),
+        );
+      }
+
+    } on FirebaseAuthException catch (e) {
+      String message = 'Something went wrong';
+
+      if (e.code == 'user-not-found') {
+        message = 'No user found for that email';
+      } else if (e.code == 'wrong-password') {
+        message = 'Wrong password';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email format';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   Widget _buildLabel(String text) {
