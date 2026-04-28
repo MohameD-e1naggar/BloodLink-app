@@ -17,7 +17,10 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -25,9 +28,15 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -39,16 +48,6 @@ class DefaultFirebaseOptions {
         );
     }
   }
-
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAqHvyDua59_zqPsHRMOSRA-0hTtodkzyU',
-    appId: '1:789508094699:web:26d383d0ed99c036b69cae',
-    messagingSenderId: '789508094699',
-    projectId: 'bloodlink-83cb8',
-    authDomain: 'bloodlink-83cb8.firebaseapp.com',
-    storageBucket: 'bloodlink-83cb8.firebasestorage.app',
-    measurementId: 'G-ZBSY8WMQX1',
-  );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyA0_DIIK7C0LKUTSWpKNoTv6kMZVIAn658',
@@ -65,24 +64,5 @@ class DefaultFirebaseOptions {
     projectId: 'bloodlink-83cb8',
     storageBucket: 'bloodlink-83cb8.firebasestorage.app',
     iosBundleId: 'com.example.www',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAvxuV74hQFmASnXZVjTFgpXHZUvZ31voU',
-    appId: '1:789508094699:ios:99e4f3af30ee054bb69cae',
-    messagingSenderId: '789508094699',
-    projectId: 'bloodlink-83cb8',
-    storageBucket: 'bloodlink-83cb8.firebasestorage.app',
-    iosBundleId: 'com.example.www',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAqHvyDua59_zqPsHRMOSRA-0hTtodkzyU',
-    appId: '1:789508094699:web:8fd7e9129b314097b69cae',
-    messagingSenderId: '789508094699',
-    projectId: 'bloodlink-83cb8',
-    authDomain: 'bloodlink-83cb8.firebaseapp.com',
-    storageBucket: 'bloodlink-83cb8.firebasestorage.app',
-    measurementId: 'G-HMFS8DKWKN',
   );
 }
