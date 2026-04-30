@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:www/Backend/FirestoreHandler.dart';
 import '../Backend/models/User.dart' as my_user;
 
-class ReviewSummaryScreen extends StatelessWidget {
+class ReviewSummaryScreen extends StatefulWidget {
   final String fullName;
   final String email;
   final String phone;
@@ -34,6 +34,13 @@ class ReviewSummaryScreen extends StatelessWidget {
     required this.hasAnemia,
     required this.lastDonation,
   });
+
+  @override
+  State<ReviewSummaryScreen> createState() => _ReviewSummaryScreenState();
+}
+
+class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -103,36 +110,36 @@ class ReviewSummaryScreen extends StatelessWidget {
             // Sections
             _buildSectionTitle('BASIC ACCOUNT'),
             _buildDataCard([
-              _buildDataRow('Full Name', fullName),
-              _buildDataRow('Email', email),
-              _buildDataRow('Phone', phone),
+              _buildDataRow('Full Name', widget.fullName),
+              _buildDataRow('Email', widget.email),
+              _buildDataRow('Phone', widget.phone),
             ]),
 
             const SizedBox(height: 25),
 
             _buildSectionTitle('PERSONAL DETAILS'),
             _buildDataCard([
-              _buildDataRow('Date of Birth', dob),
-              _buildDataRow('Gender', gender),
-              _buildDataRow('Weight', '$weight kg'),
+              _buildDataRow('Date of Birth', widget.dob),
+              _buildDataRow('Gender', widget.gender),
+              _buildDataRow('Weight', '${widget.weight} kg'),
             ]),
 
             const SizedBox(height: 25),
 
             _buildSectionTitle('MEDICAL SUMMARY'),
             _buildDataCard([
-              _buildDataRow('Blood Type', bloodType, isHighlight: true),
-              _buildDataRow('Last Donation', lastDonation),
+              _buildDataRow('Blood Type', widget.bloodType, isHighlight: true),
+              _buildDataRow('Last Donation', widget.lastDonation),
               _buildDataRow(
                 'Chronic Diseases',
-                hasChronicDiseases ? 'Yes' : 'No',
+                widget.hasChronicDiseases ? 'Yes' : 'No',
               ),
               _buildDataRow(
                 'Regular Medication',
-                takesMedication ? 'Yes' : 'No',
+                widget.takesMedication ? 'Yes' : 'No',
               ),
-              _buildDataRow('Recent Surgery', hadSurgery ? 'Yes' : 'No'),
-              _buildDataRow('Anemia', hasAnemia ? 'Yes' : 'No'),
+              _buildDataRow('Recent Surgery', widget.hadSurgery ? 'Yes' : 'No'),
+              _buildDataRow('Anemia', widget.hasAnemia ? 'Yes' : 'No'),
             ]),
 
             const SizedBox(height: 40),
@@ -142,9 +149,15 @@ class ReviewSummaryScreen extends StatelessWidget {
               width: double.infinity,
               height: 60,
               child: ElevatedButton(
-                onPressed: () {
-                 _createAccount();
-                  _showSuccessDialog(context);
+                onPressed: _isLoading ? null : () async {
+                  setState(() => _isLoading = true);
+                  bool success = await _createAccount();
+                  if (mounted) {
+                    setState(() => _isLoading = false);
+                    if (success) {
+                      _showSuccessDialog(context);
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 196, 0, 29),
@@ -153,13 +166,14 @@ class ReviewSummaryScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  // ضبط المحاذاة الافتراضية للزرار
                   alignment: Alignment.center,
                 ),
-                child: const Text(
-                  'Confirm & Register',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                child: _isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Confirm & Register',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
             const SizedBox(height: 40),
@@ -170,42 +184,50 @@ class ReviewSummaryScreen extends StatelessWidget {
   }
 
 
-  void _createAccount()async{
+  Future<bool> _createAccount() async {
     final UserCredential credential;
     final uid;
     try {
        credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: pass.trim(),
+        email: widget.email,
+        password: widget.pass.trim(),
       );
        uid = credential.user!.uid;
 
        await FirestoreHandler.createUser(my_user.User(
          id: uid,
-         email: email,
-         name: fullName,
-           phoneNumber: phone,
-           donorDob:  dob,
-       donorGender: gender,
-       bloodType: bloodType,
-       weight: weight,
-       hasChronicDiseases: hasChronicDiseases,
-       hadSurgery: hadSurgery,
-           hasAnemia: hasAnemia,
-       takesMedication: takesMedication,
-       donorLastDonation: lastDonation,
+         email: widget.email,
+         name: widget.fullName,
+           phoneNumber: widget.phone,
+           donorDob:  widget.dob,
+       donorGender: widget.gender,
+       bloodType: widget.bloodType,
+       weight: widget.weight,
+       hasChronicDiseases: widget.hasChronicDiseases,
+       hadSurgery: widget.hadSurgery,
+           hasAnemia: widget.hasAnemia,
+       takesMedication: widget.takesMedication,
+       donorLastDonation: widget.lastDonation,
            type: my_user.UserTypes.donor.name,
        ));
+       return true;
     } on FirebaseAuthException catch (e) {
+      String message = 'An error occurred';
       if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
+        message = 'The password provided is too weak.';
       } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
+        message = 'The account already exists for that email.';
       }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+      return false;
     } catch (e) {
-      print(e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+      return false;
     }
-
   }
   Widget _buildSectionTitle(String title) {
     return Padding(

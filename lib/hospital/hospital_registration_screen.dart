@@ -18,6 +18,7 @@ class _HospitalRegistrationScreenState
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _addressController = TextEditingController();
 
   String _phoneNumber = '';
   bool _isPasswordVisible = false;
@@ -28,6 +29,7 @@ class _HospitalRegistrationScreenState
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -92,6 +94,21 @@ class _HospitalRegistrationScreenState
                   validator: (value) {
                     if (value == null || !value.contains('@')) {
                       return 'Enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                _buildInputField(
+                  label: 'Official Address',
+                  hint: 'maddi, Street 9',
+                  icon: Icons.location_on,
+                  controller: _addressController,
+                  isDark: isDarkMode,
+                  keyboardType: TextInputType.streetAddress,
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Enter an address please';
                     }
                     return null;
                   },
@@ -194,6 +211,8 @@ class _HospitalRegistrationScreenState
                   pass: _passwordController.text.trim(),
                   hospitalName: _nameController.text.trim(),
                   phoneNumber: _phoneNumber.trim(),
+                  address: _addressController.text,
+
                 ),
               ),
             );
@@ -283,7 +302,7 @@ class _HospitalRegistrationScreenState
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'STEP 1 OF 3',
+              'STEP 1 OF 2',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -291,7 +310,7 @@ class _HospitalRegistrationScreenState
               ),
             ),
             Text(
-              '33% Complete',
+              '50% Complete',
               style: TextStyle(
                 fontSize: 11,
                 color: isDark ? Colors.white60 : Colors.black54,
@@ -301,7 +320,7 @@ class _HospitalRegistrationScreenState
         ),
         const SizedBox(height: 8),
         LinearProgressIndicator(
-          value: 0.33,
+          value: 0.50,
           backgroundColor: isDark ? Colors.white10 : Colors.black12,
           valueColor: const AlwaysStoppedAnimation<Color>(
             const Color.fromARGB(255, 196, 0, 29),

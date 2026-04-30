@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/Backend/models/Inventory.dart';
 import 'package:www/Backend/models/Request.dart';
+import 'package:www/Backend/models/AppNotification.dart';
 
 import '../Backend/FirestoreHandler.dart';
 import '../Backend/cash/shared_pref.dart';
@@ -137,6 +138,14 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                     abNeg: updated['AB-'],
                   ));
 
+                  await FirestoreHandler.createNotification(AppNotification(
+                    receiverId: uid,
+                    title: 'Inventory Updated',
+                    body: isAdding ? 'Added $amount units to $selectedType.' : 'Removed $amount units from $selectedType.',
+                    timestamp: DateTime.now().toIso8601String(),
+                    type: 'inventory_update',
+                  ));
+
                   Navigator.pop(context);
 
                   setState(() {});
@@ -237,9 +246,9 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                     child: const Icon(Icons.water_drop, color: Colors.white, size: 20),
                   ),
                 ),
-                title: const Text(
-                  'City Central Blood Bank',
-                  style: TextStyle(
+                title: Text(
+                  user.name ?? '',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -255,7 +264,7 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const NotificationsScreen(),
+                          builder: (context) => NotificationsScreen(uid: uid),
                         ),
                       );
                     },
@@ -417,7 +426,18 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
 }
 
 class NotificationsScreen extends StatelessWidget {
-  const NotificationsScreen({super.key});
+  final String uid;
+  const NotificationsScreen({super.key, required this.uid});
+
+  String _formatTimestamp(String? isoString) {
+    if (isoString == null) return '';
+    final dt = DateTime.parse(isoString);
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+    return 'Just now';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -432,46 +452,70 @@ class NotificationsScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.fromLTRB(0, 0, 0, 12),
+      body: StreamBuilder<List<AppNotification>>(
+        stream: FirestoreHandler.getNotificationsStream(uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFE53935)));
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.white)));
+          }
+          final notifications = snapshot.data ?? [];
+          if (notifications.isEmpty) {
+            return const Center(child: Text("No notifications yet", style: TextStyle(color: Colors.white70)));
+          }
+
+          return ListView.builder(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF2A2A2A)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline, color: Color(0xFFE53935)),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Stock Update',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Emergency request for O- blood type.',
-                        style: TextStyle(color: Colors.grey[400], fontSize: 13),
-                      ),
-                    ],
-                  ),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notif = notifications[index];
+              return Container(
+                margin: const EdgeInsets.fromLTRB(0, 0, 0, 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A1A),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF2A2A2A)),
                 ),
-                Text(
-                  '2m ago',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 10),
+                child: Row(
+                  children: [
+                    Icon(
+                      notif.type == 'request_incoming' ? Icons.local_hospital :
+                      notif.type == 'request_fulfilled' ? Icons.check_circle :
+                      notif.type == 'request_approved' ? Icons.thumb_up :
+                      Icons.info_outline, 
+                      color: const Color(0xFFE53935)
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            notif.title ?? 'Notification',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            notif.body ?? '',
+                            style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      _formatTimestamp(notif.timestamp),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 10),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           );
         },
       ),

@@ -3,15 +3,14 @@ import 'dart:ffi';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/Backend/FirestoreHandler.dart';
-import 'package:www/Backend/cash/shared_pref.dart';
 import 'package:www/Backend/models/Request.dart';
-import 'package:www/bloodbank%20screens/bloodbank_home.dart';
 import 'package:www/data/requests_store.dart';
 
-import 'hospital_home.dart'; // استيراد ملف التخزين الموحد
+import 'hospital_home.dart';
 
 class RequestBloodUnitsScreen extends StatefulWidget {
-  const RequestBloodUnitsScreen({super.key});
+  final String hospitalName;
+  const RequestBloodUnitsScreen({super.key, required this.hospitalName});
 
   @override
   State<RequestBloodUnitsScreen> createState() =>
@@ -128,9 +127,6 @@ class _RequestBloodUnitsScreenState extends State<RequestBloodUnitsScreen> {
                     return;
                   }
                   var uid = FirebaseAuth.instance.currentUser?.uid;
-                  var user = await SharedPref.getUser();
-                  var name = user?.name ?? "";
-
 
                   await FirestoreHandler.createReq(Request(
                     reqSender: ReqSender.hospital.name,
@@ -141,12 +137,11 @@ class _RequestBloodUnitsScreenState extends State<RequestBloodUnitsScreen> {
                     hospitalId: uid,
                     units: int.parse(_quantityController.text),
                     time: TimeOfDay.now().format(context),
-                    hospitalName: name,
+                    hospitalName: widget.hospitalName,
                     donorsAcceptedCriticalReqNum: 0
-
                   ));
                   refreshHospitalHome.value = !refreshHospitalHome.value;
-                  Navigator.pop(context); // العودة للشاشة السابقة
+                  Navigator.pop(context);
                 },
                 child: const Text(
                   'Submit Request',

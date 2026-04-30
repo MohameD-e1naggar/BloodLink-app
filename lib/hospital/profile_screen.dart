@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:www/Backend/cash/shared_pref.dart';
 import 'package:www/Backend/FirestoreHandler.dart';
 import 'package:www/Backend/models/User.dart' as my_user;
+import 'package:www/hospital/hospital_login.dart';
 
 class profile extends StatefulWidget {
   const profile({super.key});
@@ -99,7 +100,11 @@ class _profileState extends State<profile> {
                   child: ElevatedButton(
                     onPressed: () async{
                       await FirebaseAuth.instance.signOut();
-                      Navigator.pop(context);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HospitalLoginScreen()),
+
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1A1A1A),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:www/bloodbank%20screens/location_screen.dart';
-
-// تأكد من استيراد ملف الشاشة الثالثة هنا
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import 'package:www/Backend/models/User.dart' as my_user;
+import 'package:www/bloodbank screens/bb_wrapper.dart';
+import 'package:www/bloodbank%20screens/bloodbank_login.dart';
 
 class ResponsiblePersonScreenbb extends StatefulWidget {
 
@@ -35,6 +37,60 @@ class _ResponsiblePersonScreenbbState extends State<ResponsiblePersonScreenbb> {
   final _adminNameController = TextEditingController();
   final _nationalIdController = TextEditingController();
   String _adminPhoneNumber = '';
+  bool _isLoading = false;
+
+  void _createAccount() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: widget.email,
+        password: widget.pass,
+      );
+      final uid = credential.user!.uid;
+      await FirestoreHandler.createUser(my_user.User(
+          id: uid,
+          email: widget.email,
+          name: widget.bankName,
+          phoneNumber: widget.phoneNumber,
+          adminName: _adminNameController.text.trim(),
+          adminNationalId: _nationalIdController.text.trim(),
+          adminPhoneNumber: _adminPhoneNumber.trim(),
+          address: widget.address,
+          workingHours: widget.workingHours,
+          type: my_user.UserTypes.bloodBank.name,
+      ));
+      
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const BloodBank_Login()),
+          (route) => false,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        String message = 'An error occurred';
+        if (e.code == 'weak-password') {
+          message = 'The password provided is too weak.';
+        } else if (e.code == 'email-already-in-use') {
+          message = 'The account already exists for that email.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -99,7 +155,7 @@ class _ResponsiblePersonScreenbbState extends State<ResponsiblePersonScreenbb> {
                       ),
                     ),
                     Text(
-                      'Step 2 of 3',
+                      'Step 2 of 2',
                       style: TextStyle(
                         color: const Color.fromARGB(255, 196, 0, 29),
                         fontWeight: FontWeight.bold,
@@ -112,7 +168,7 @@ class _ResponsiblePersonScreenbbState extends State<ResponsiblePersonScreenbb> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: const LinearProgressIndicator(
-                    value: 0.66,
+                    value: 1.0,
                     minHeight: 6,
                     backgroundColor: Colors.white10,
                     valueColor: AlwaysStoppedAnimation<Color>(
@@ -182,7 +238,7 @@ class _ResponsiblePersonScreenbbState extends State<ResponsiblePersonScreenbb> {
                   width: double.infinity,
                   height: 58,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: _isLoading ? null : () {
                       if (_formKey.currentState!.validate()) {
                         if (_adminPhoneNumber.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -193,25 +249,7 @@ class _ResponsiblePersonScreenbbState extends State<ResponsiblePersonScreenbb> {
                           return;
                         }
 
-                        // الانتقال للشاشة الثالثة
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                 bloodbankLocationScreen(
-                                  email: widget.email ,
-                                   pass: widget.pass,
-                                   phoneNumber: widget.phoneNumber,
-                                   bankName: widget.bankName,
-                                   adminName: _adminNameController.text.trim(),
-                                   adminNationalId: _nationalIdController.text.trim(),
-                                   adminPhoneNumber: _adminPhoneNumber.trim(),
-                                   workingHours: widget.workingHours,
-                                   address: widget.address,
-
-                                ),
-                          ),
-                        );
+                        _createAccount();
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -221,14 +259,16 @@ class _ResponsiblePersonScreenbbState extends State<ResponsiblePersonScreenbb> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Next',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isLoading 
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Complete Registration',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -312,4 +352,8 @@ class _ResponsiblePersonScreenbbState extends State<ResponsiblePersonScreenbb> {
       ),
     );
   }
+
+
+
+
 }

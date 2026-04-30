@@ -42,14 +42,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             return Scaffold(
               backgroundColor: const Color.fromARGB(255, 0, 0, 0),
               appBar: AppBar(
-                leading: IconButton(
-                    onPressed: () async {
-                      SharedPref.clear();
-                      await FirebaseAuth.instance.signOut();
-                      Navigator.pushReplacement(context,
-                          MaterialPageRoute(builder:(context)=> LoginScreen()));
-                    },
-                    icon: Icon(Icons.logout)),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 automaticallyImplyLeading:
@@ -126,6 +118,39 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       ),
                     ]),
                     const SizedBox(height: 40),
+                // زر تسجيل الخروج
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await SharedPref.clear();
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          (route) => false,
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1A1A1A),
+                      minimumSize: const Size(double.infinity, 55),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        side: const BorderSide(color: Color(0xFF2A2A2A)),
+                      ),
+                    ),
+                    child: const Text(
+                      "Logout",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 196, 0, 29),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 100),
                   ],
                 ),
               ),

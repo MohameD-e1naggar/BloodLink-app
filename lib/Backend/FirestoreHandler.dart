@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:www/Backend/models/Request.dart';
 import 'package:www/Backend/models/Inventory.dart';
+import 'package:www/Backend/models/AppNotification.dart';
 import 'models/User.dart' as my_user;
 
 class FirestoreHandler{
@@ -27,6 +28,33 @@ class FirestoreHandler{
         }
     );
     return collection;
+  }
+
+  static CollectionReference<AppNotification> getNotificationCollection(){
+    var collection = FirebaseFirestore.instance.collection(AppNotification.collectionName).withConverter(
+        fromFirestore: (snapshot, options) {
+          return AppNotification.fromMap(snapshot.data()!,id:snapshot.id);
+        },
+        toFirestore: (notif, options) {
+          return notif.toMap();
+        }
+    );
+    return collection;
+  }
+
+  static Future<void> createNotification(AppNotification notification) async {
+    await getNotificationCollection().add(notification);
+  }
+
+  static Stream<List<AppNotification>> getNotificationsStream(String receiverId) {
+    return getNotificationCollection()
+        .where('receiverId', isEqualTo: receiverId)
+        .snapshots()
+        .map((snapshot) {
+          final list = snapshot.docs.map((doc) => doc.data()).toList();
+          list.sort((a, b) => (b.timestamp ?? '').compareTo(a.timestamp ?? ''));
+          return list;
+        });
   }
 
 
@@ -65,6 +93,52 @@ class FirestoreHandler{
     await collection.doc(requestId).update({
       'reqStatus': newStatus.name,
     });
+    
+    // Create notification if the request belongs to a blood bank
+    final doc = await collection.doc(requestId).get();
+    if (doc.exists) {
+      final req = doc.data()!;
+      if (req.bloodBankId != null && req.bloodBankId!.isNotEmpty) {
+        if (newStatus == RequestStatus.approved) {
+          await createNotification(AppNotification(
+            receiverId: req.bloodBankId,
+            title: 'Request Approved',
+            body: 'You have approved a request for ${req.bloodType} blood.',
+            timestamp: DateTime.now().toIso8601String(),
+            type: 'request_approved',
+          ));
+        } else if (newStatus == RequestStatus.fulfilled) {
+          await createNotification(AppNotification(
+            receiverId: req.bloodBankId,
+            title: 'Request Fulfilled',
+            body: 'The hospital has marked your blood request for ${req.bloodType} as fulfilled.',
+            timestamp: DateTime.now().toIso8601String(),
+            type: 'request_fulfilled',
+          ));
+        }
+      }
+
+      // Hospital Notification
+      if (req.hospitalId != null && req.hospitalId!.isNotEmpty) {
+        if (newStatus == RequestStatus.approved && req.bloodBankId != null && req.bloodBankId!.isNotEmpty) {
+          await createNotification(AppNotification(
+            receiverId: req.hospitalId,
+            title: 'Request Accepted',
+            body: '${req.bloodBankName ?? "A Blood Bank"} has accepted your request for ${req.bloodType}.',
+            timestamp: DateTime.now().toIso8601String(),
+            type: 'request_accepted_hospital',
+          ));
+        } else if (newStatus == RequestStatus.rejected) {
+          await createNotification(AppNotification(
+            receiverId: req.hospitalId,
+            title: 'Request Rejected',
+            body: '${req.bloodBankName ?? "A Blood Bank"} has rejected your request for ${req.bloodType}.',
+            timestamp: DateTime.now().toIso8601String(),
+            type: 'request_rejected_hospital',
+          ));
+        }
+      }
+    }
   }
 
 
@@ -78,6 +152,8 @@ class FirestoreHandler{
 
   static Future<void> updateReqUnitsCounter(String requestId) async {
     final docRef = getReqCollection().doc(requestId);
+    bool justApproved = false;
+    Request? reqData;
     
     await FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
@@ -94,8 +170,23 @@ class FirestoreHandler{
           'units': currentUnits,
           if (currentUnits == 0) 'reqStatus': RequestStatus.approved.name,
         });
+
+        if (currentUnits == 0) {
+          justApproved = true;
+          reqData = req;
+        }
       }
     });
+
+    if (justApproved && reqData != null && reqData!.hospitalId != null && reqData!.hospitalId!.isNotEmpty) {
+      await createNotification(AppNotification(
+        receiverId: reqData!.hospitalId,
+        title: 'Emergency Request Approved',
+        body: 'Donors have accepted enough units for your ${reqData!.bloodType} emergency request!',
+        timestamp: DateTime.now().toIso8601String(),
+        type: 'emergency_approved_hospital',
+      ));
+    }
   }
 
   static Future<void> updateReqBloodBank(String requestId,String bloodBankName,String bloodBankId) async {
@@ -126,10 +217,19 @@ class FirestoreHandler{
 
 
 
-  static Future<void> createReq(Request req){
+  static Future<void> createReq(Request req) async {
     var collection = getReqCollection();
-    var docRef = collection.add(req);
-    return docRef;
+    var docRef = await collection.add(req);
+    
+    if (req.bloodBankId != null && req.bloodBankId!.isNotEmpty) {
+      await createNotification(AppNotification(
+        receiverId: req.bloodBankId,
+        title: 'New Blood Request',
+        body: 'Hospital ${req.hospitalName ?? "Unknown"} requested ${req.units} units of ${req.bloodType}.',
+        timestamp: DateTime.now().toIso8601String(),
+        type: 'request_incoming',
+      ));
+    }
   }
 
 

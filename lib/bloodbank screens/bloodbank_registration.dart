@@ -346,7 +346,7 @@ class _bloodbank_registrationState extends State<bloodbank_registration> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'STEP 1 OF 3',
+              'STEP 1 OF 2',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -354,7 +354,7 @@ class _bloodbank_registrationState extends State<bloodbank_registration> {
               ),
             ),
             Text(
-              '33% Complete',
+              '50% Complete',
               style: TextStyle(
                 fontSize: 11,
                 color: isDark ? Colors.white60 : Colors.black54,
@@ -364,7 +364,7 @@ class _bloodbank_registrationState extends State<bloodbank_registration> {
         ),
         const SizedBox(height: 8),
         LinearProgressIndicator(
-          value: 0.33,
+          value: 0.50,
           backgroundColor: isDark ? Colors.white10 : Colors.black12,
           valueColor: const AlwaysStoppedAnimation<Color>(
             const Color.fromARGB(255, 196, 0, 29),

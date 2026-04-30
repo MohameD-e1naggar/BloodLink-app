@@ -35,17 +35,9 @@ class BloodBankProfileScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: const Color(0xFF0F0F0F),
           appBar: AppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: Colors.transparent,
             elevation: 0,
-            leading: IconButton(
-                onPressed: ()async{
-                  await SharedPref.clear();
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder:(context)=> BloodBank_Login()));
-
-                },
-                icon: Icon(Icons.logout)),
             title: const Text(
               'Blood Bank Profile',
               style: TextStyle(color: Colors.white, fontSize: 18),
@@ -180,6 +172,39 @@ class BloodBankProfileScreen extends StatelessWidget {
                   ),
                 ]),
                 const SizedBox(height: 40),
+                // زر تسجيل الخروج
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await SharedPref.clear();
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const BloodBank_Login()),
+
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1A1A1A),
+                      minimumSize: const Size(double.infinity, 55),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        side: const BorderSide(color: Color(0xFF2A2A2A)),
+                      ),
+                    ),
+                    child: const Text(
+                      "Logout",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 196, 0, 29),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 100),
               ],
             ),
           ),

@@ -18,6 +18,7 @@ class _HospitalLoginScreenState extends State<HospitalLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -95,15 +96,9 @@ class _HospitalLoginScreenState extends State<HospitalLoginScreen> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: _isLoading ? null : () {
                       if (_formKey.currentState!.validate()) {
                         login();
-                        // Navigator.pushReplacement(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => const MainLayout(),
-                        //   ),
-                        // );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -113,14 +108,16 @@ class _HospitalLoginScreenState extends State<HospitalLoginScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      "LOGIN",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            "LOGIN",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -160,6 +157,9 @@ class _HospitalLoginScreenState extends State<HospitalLoginScreen> {
   }
 
   void login() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       final credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
@@ -167,16 +167,16 @@ class _HospitalLoginScreenState extends State<HospitalLoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-
       if (credential.user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const MainLayout(),
-          ),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MainLayout(),
+            ),
+          );
+        }
       }
-
     } on FirebaseAuthException catch (e) {
       String message = 'Something went wrong';
 
@@ -188,10 +188,17 @@ class _HospitalLoginScreenState extends State<HospitalLoginScreen> {
         message = 'Invalid email format';
       }
 
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

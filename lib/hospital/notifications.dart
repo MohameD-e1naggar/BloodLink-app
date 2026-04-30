@@ -1,55 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import 'package:www/Backend/models/AppNotification.dart';
 
 class NotificationsScreen extends StatelessWidget {
-  const NotificationsScreen({super.key});
+  final String uid;
+  const NotificationsScreen({super.key, required this.uid});
+
+  String _formatTimestamp(String? isoString) {
+    if (isoString == null) return '';
+    final dt = DateTime.parse(isoString);
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+    return 'Just now';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F), // الخلفية الداكنة الموحدة
       appBar: _buildAppBar(context),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        children: [
-          _buildSectionHeader("TODAY"),
-          _buildNotificationItem(
-            title: "Urgent Request Accepted",
-            body:
-                "City General Blood Bank has accepted your STAT request for 4 units of B+.",
-            time: "2 mins ago",
-            icon: Icons.check_circle,
-            iconColor: const Color(0xFF43A047), // أخضر
-            isUnread: true,
-          ),
-          _buildNotificationItem(
-            title: "Rider is Nearby",
-            body: "Rider #22 is 500m away with your A- batch delivery.",
-            time: "15 mins ago",
-            icon: Icons.moped_rounded,
-            iconColor: const Color.fromARGB(255, 196, 0, 29), // أحمر
-            isUnread: true,
-          ),
-          const SizedBox(height: 20),
-          _buildSectionHeader("EARLIER"),
-          _buildNotificationItem(
-            title: "System Update",
-            body:
-                "New feature added: You can now track live temperature of blood batches.",
-            time: "5 hours ago",
-            icon: Icons.info_outline,
-            iconColor: const Color(0xFF2196F3), // أزرق
-            isUnread: false,
-          ),
-          _buildNotificationItem(
-            title: "Delivery Fulfilled",
-            body:
-                "Batch #8821 was successfully delivered and signed by Dr. Sarah.",
-            time: "Yesterday",
-            icon: Icons.inventory_2_outlined,
-            iconColor: const Color(0xFF888888), // رمادي
-            isUnread: false,
-          ),
-        ],
+      body: StreamBuilder<List<AppNotification>>(
+        stream: FirestoreHandler.getNotificationsStream(uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFE53935)));
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.white)));
+          }
+          final notifications = snapshot.data ?? [];
+          if (notifications.isEmpty) {
+            return const Center(child: Text("No notifications yet", style: TextStyle(color: Colors.white70)));
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notif = notifications[index];
+              return _buildNotificationItem(
+                title: notif.title ?? 'Notification',
+                body: notif.body ?? '',
+                time: _formatTimestamp(notif.timestamp),
+                icon: notif.type == 'request_accepted_hospital' ? Icons.check_circle : 
+                      notif.type == 'request_rejected_hospital' ? Icons.cancel :
+                      notif.type == 'emergency_approved_hospital' ? Icons.warning_amber_rounded :
+                      Icons.info_outline,
+                iconColor: notif.type == 'request_accepted_hospital' ? const Color(0xFF43A047) :
+                           notif.type == 'request_rejected_hospital' ? const Color.fromARGB(255, 196, 0, 29) :
+                           notif.type == 'emergency_approved_hospital' ? const Color(0xFFFFB300) :
+                           const Color(0xFF2196F3),
+                isUnread: !notif.isRead,
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -88,21 +95,7 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  // --- عنوان القسم (TODAY / EARLIER) ---
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 15),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Color(0xFF555555),
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
+
 
   // --- عنصر الإشعار الواحد ---
   Widget _buildNotificationItem({

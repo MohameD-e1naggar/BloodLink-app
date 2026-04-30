@@ -16,6 +16,7 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -93,16 +94,9 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: _isLoading ? null : () {
                       if (_formKey.currentState!.validate()) {
                         login();
-
-                        // Navigator.pushReplacement(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => const BloodBankWrapper(),
-                        //   ),
-                        // );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -112,14 +106,16 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      "LOGIN",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            "LOGIN",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -161,6 +157,7 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
 
 
   void login() async {
+    setState(() => _isLoading = true);
     try {
       final credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
@@ -168,16 +165,16 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
         password: _passwordController.text.trim(),
       );
 
-
       if (credential.user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const BloodBankWrapper(),
-          ),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const BloodBankWrapper(),
+            ),
+          );
+        }
       }
-
     } on FirebaseAuthException catch (e) {
       String message = 'Something went wrong';
 
@@ -189,9 +186,15 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
         message = 'Invalid email format';
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

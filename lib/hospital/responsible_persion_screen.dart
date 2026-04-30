@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:www/hospital/location_screen.dart';
+import 'package:www/hospital/hospital_login.dart';
+import '../Backend/FirestoreHandler.dart';
+import '../Backend/models/User.dart' as my_user;
 
 // تأكد من استيراد ملف الشاشة الثالثة هنا
 
@@ -9,12 +12,14 @@ class ResponsiblePersonScreen extends StatefulWidget {
   final String email;
   final String pass;
   final String phoneNumber;
+  final String address;
   const ResponsiblePersonScreen({
     super.key,
     required this.phoneNumber,
     required this.hospitalName,
     required this.email,
     required this.pass,
+    required this.address,
   });
 
   @override
@@ -28,6 +33,7 @@ class _ResponsiblePersonScreenState extends State<ResponsiblePersonScreen> {
   final _adminNameController = TextEditingController();
   final _nationalIdController = TextEditingController();
   String _adminPhoneNumber = '';
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -170,12 +176,12 @@ class _ResponsiblePersonScreenState extends State<ResponsiblePersonScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // زر NEXT المحدث للانتقال
+
                 SizedBox(
                   width: double.infinity,
                   height: 58,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: _isLoading ? null : () {
                       if (_formKey.currentState!.validate()) {
                         if (_adminPhoneNumber.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -185,24 +191,7 @@ class _ResponsiblePersonScreenState extends State<ResponsiblePersonScreen> {
                           );
                           return;
                         }
-
-                        // الانتقال للشاشة الثالثة
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                 HospitalLocationScreen(
-                                  email: widget.email,
-                                   pass: widget.pass,
-                                   hospitalName: widget.hospitalName,
-                                   phoneNumber: widget.phoneNumber,
-                                   adminName: _adminNameController.text.trim(),
-                                   adminPhoneNumber: _adminPhoneNumber.trim(),
-                                   adminNationalId: _nationalIdController.text.trim(),
-
-                                ),
-                          ),
-                        );
+                        _createAccount();
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -212,14 +201,16 @@ class _ResponsiblePersonScreenState extends State<ResponsiblePersonScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Next',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isLoading 
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Create Account',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -302,5 +293,58 @@ class _ResponsiblePersonScreenState extends State<ResponsiblePersonScreen> {
         ),
       ),
     );
+  }
+
+
+  void _createAccount() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: widget.email,
+        password: widget.pass,
+      );
+      final uid = credential.user!.uid;
+      await FirestoreHandler.createUser(my_user.User(
+        id: uid,
+        email: widget.email,
+        name: widget.hospitalName,
+        phoneNumber: widget.phoneNumber,
+        adminName: _adminNameController.text.trim(),
+        adminNationalId: _nationalIdController.text.trim(),
+        adminPhoneNumber: _adminPhoneNumber.trim(),
+        address: widget.address,
+        type: my_user.UserTypes.hospital.name,
+      ));
+
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HospitalLoginScreen()),
+              (route) => false,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        String message = 'An error occurred';
+        if (e.code == 'weak-password') {
+          message = 'The password provided is too weak.';
+        } else if (e.code == 'email-already-in-use') {
+          message = 'The account already exists for that email.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 }
