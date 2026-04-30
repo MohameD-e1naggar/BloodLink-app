@@ -66,6 +66,15 @@ class FirestoreHandler{
       'reqStatus': newStatus.name,
     });
   }
+
+
+  static Future<void> updateDonorsCounter(String requestId,) async {
+    final collection = getReqCollection();
+
+    await collection.doc(requestId).update({
+      'donorsAcceptedCriticalReqNum': FieldValue.increment(1),
+    });
+  }
   static DocumentReference<Inventory> getInventoryDoc(String userId){
     var userCollection = getUserCollection();
     var userDoc = userCollection.doc(userId);

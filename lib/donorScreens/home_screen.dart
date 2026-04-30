@@ -75,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       FirestoreHandler.getUser(uid) ,
       FirestoreHandler.getReqByDonorId(uid),
       FirestoreHandler.getCriticalReq(),
+      SharedPref.getHiddenReqs(),
     ]);
   }
 
@@ -139,13 +140,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           var requests = snapshot.data![1] as List<Request>;
           var user = snapshot.data![0] as my_user.User;
           var allCriticalRequests = snapshot.data![2] as List<Request>;
+          var hiddenReqs = snapshot.data![3] as List<String>;
           
 
           var filteredRequests = requests
               .where((req) => req.reqStatus != RequestStatus.fulfilled.name)
               .toList();
           var criticalRequests = allCriticalRequests
-              .where((req) => req.reqStatus != RequestStatus.fulfilled.name)
+              .where((req) => req.reqStatus != RequestStatus.fulfilled.name && !hiddenReqs.contains(req.id))
               .toList();
 
 

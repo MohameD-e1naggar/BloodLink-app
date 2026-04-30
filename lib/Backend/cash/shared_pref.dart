@@ -11,6 +11,9 @@ class SharedPref {
   // Keys for storing data
   static const String _userKey = 'currentUser';
   static const String _reqsKey = 'userReqs';
+  static const String _acceptedReqsKey = 'acceptedReqs';
+  static const String _rejectedReqsKey = 'rejectedReqs';
+  static const String _hiddenReqsKey = 'hiddenReqs';
 
   static Future<void> init() async {
     try {
@@ -132,5 +135,39 @@ class SharedPref {
       return false;
     }
   }
+
+  // --- Local Request States for Donor ---
+
+  static Future<List<String>> _getStringList(String key) async {
+    try {
+      return sharedPreferences.getStringList(key) ?? [];
+    } catch (e) {
+      print('SharedPref._getStringList($key) failed: $e');
+      return [];
+    }
+  }
+
+  static Future<bool> _addToStringList(String key, String value) async {
+    try {
+      final list = await _getStringList(key);
+      if (!list.contains(value)) {
+        list.add(value);
+        return await sharedPreferences.setStringList(key, list);
+      }
+      return true;
+    } catch (e) {
+      print('SharedPref._addToStringList($key) failed: $e');
+      return false;
+    }
+  }
+
+  static Future<List<String>> getAcceptedReqs() => _getStringList(_acceptedReqsKey);
+  static Future<bool> addAcceptedReq(String id) => _addToStringList(_acceptedReqsKey, id);
+
+  static Future<List<String>> getRejectedReqs() => _getStringList(_rejectedReqsKey);
+  static Future<bool> addRejectedReq(String id) => _addToStringList(_rejectedReqsKey, id);
+
+  static Future<List<String>> getHiddenReqs() => _getStringList(_hiddenReqsKey);
+  static Future<bool> addHiddenReq(String id) => _addToStringList(_hiddenReqsKey, id);
 
 }

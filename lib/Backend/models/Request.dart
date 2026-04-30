@@ -31,6 +31,7 @@ class Request {
   final String? reqStatus;
   final String? urgency;
   final String? id ;
+  final int? donorsAcceptedCriticalReqNum;
 
   Request( {
     this.donorId,
@@ -46,6 +47,7 @@ class Request {
     this.urgency,
     this.reqSender,
     this.id,
+    this.donorsAcceptedCriticalReqNum,
   });
 
   // Convert object → Firestore
@@ -62,7 +64,8 @@ class Request {
       'reqStatus': reqStatus,
       'urgency': urgency,
       'reqSender': reqSender,
-      'hospitalName': hospitalName
+      'hospitalName': hospitalName,
+      'donorsAcceptedCriticalReqNum':donorsAcceptedCriticalReqNum,
     };
   }
 
@@ -82,6 +85,7 @@ class Request {
       urgency: map['urgency'],
       reqSender: map['reqSender'],
       hospitalName: map['hospitalName'],
+      donorsAcceptedCriticalReqNum: map['donorsAcceptedCriticalReqNum'],
     );
   }
 
@@ -99,6 +103,7 @@ class Request {
     String? urgency,
     String? reqSender,
     String? hospitalName,
+    int? donorsAcceptedCriticalReqNum,
   }) {
     return Request(
       donorId: donorId ?? this.donorId,
@@ -113,6 +118,7 @@ class Request {
       urgency: urgency ?? this.urgency,
       reqSender: reqSender ?? this.reqSender,
       hospitalName: hospitalName ?? this.hospitalName,
+      donorsAcceptedCriticalReqNum : donorsAcceptedCriticalReqNum ?? this.donorsAcceptedCriticalReqNum,
     );
   }
 }

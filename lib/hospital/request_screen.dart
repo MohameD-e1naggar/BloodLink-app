@@ -142,6 +142,7 @@ class _RequestBloodUnitsScreenState extends State<RequestBloodUnitsScreen> {
                     units: int.parse(_quantityController.text),
                     time: TimeOfDay.now().format(context),
                     hospitalName: name,
+                    donorsAcceptedCriticalReqNum: 0
 
                   ));
                   refreshHospitalHome.value = !refreshHospitalHome.value;
