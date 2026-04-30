@@ -100,8 +100,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       'pending' : pending,
       "approved" : approved,
       'fulfilled' : fulfilled,
-
-
     };
   }
 
@@ -140,7 +138,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           }
           var requests = snapshot.data![1] as List<Request>;
           var user = snapshot.data![0] as my_user.User;
-          var criticalRequests = snapshot.data![2] as List<Request>;
+          var allCriticalRequests = snapshot.data![2] as List<Request>;
+          
+
+          var filteredRequests = requests
+              .where((req) => req.reqStatus != RequestStatus.fulfilled.name)
+              .toList();
+          var criticalRequests = allCriticalRequests
+              .where((req) => req.reqStatus != RequestStatus.fulfilled.name)
+              .toList();
 
 
            SharedPref.setReqs(requests);
@@ -166,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildAppBar(user.name ?? "",requests.length),
+                      _buildAppBar(user.name ?? "",filteredRequests.length),
                       const SizedBox(height: 10),
                       _buildStatsSection(status),
                       const SizedBox(height: 20),

@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:www/Backend/FirestoreHandler.dart';
+
 import 'package:www/Backend/cash/shared_pref.dart';
 import 'package:www/Backend/models/Request.dart';
 import '../Backend/models/User.dart' as my_user;
@@ -23,65 +22,86 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
     setState(() {});
   }
 
+
+
   @override
   Widget build(BuildContext context) {
-    var requests = SharedPref.getReqs();
-    var user = SharedPref.getUser() ?? my_user.User(type: 'donor');
 
-        return Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            automaticallyImplyLeading: false, // إزالة زر الرجوع التلقائي
-            title: const Text(
-              'My Requests',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh, color: Colors.white),
-                onPressed: () => setState(() {}),
-              ),
-            ],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Active Appointments',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+
+        return FutureBuilder(
+          future:  SharedPref.getReqs(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+
+            if (snapshot.hasError) {
+              return Text("Error: ${snapshot.error}");
+            }
+
+            if (!snapshot.hasData) {
+              return Text("No user found");
+            }
+
+            List<Request> requests = snapshot.data!
+                .where((req) => req.reqStatus != RequestStatus.fulfilled.name)
+                .toList();
+            return Scaffold(
+              backgroundColor: Colors.black,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                automaticallyImplyLeading: false, // إزالة زر الرجوع التلقائي
+                title: const Text(
+                  'My Requests',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    onPressed: () => setState(() {}),
                   ),
+                ],
+              ),
+              body: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Active Appointments',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: requests.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No donation requests yet.",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: requests.length,
+                              itemBuilder: (context, index) {
+                                final req = requests[index];
+                                return _buildMyRequestCard(
+                                  context,
+                                 req: req,
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: requests.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "No donation requests yet.",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                      : ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: requests.length,
-                          itemBuilder: (context, index) {
-                            final req = requests[index];
-                            return _buildMyRequestCard(
-                              context,
-                             req: req,
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          }
         );
 
 

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
+import 'package:www/Backend/models/User.dart' as my_user;
+import 'package:www/Backend/models/Inventory.dart';
 
 class BloodAvailabilityScreen extends StatefulWidget {
   const BloodAvailabilityScreen({super.key});
@@ -23,29 +26,68 @@ class _BloodAvailabilityScreenState extends State<BloodAvailabilityScreen> {
     'O-',
   ];
 
-  final List<Map<String, dynamic>> _locations = [
-    {
-      'name': 'City General Blood Bank',
-      'distance': '2.4 km',
-      'city': 'New York, NY',
-      'units': 14,
-      'status': 'high',
-    },
-    {
-      'name': 'Saint Jude Medical Center',
-      'distance': '4.8 km',
-      'city': 'Brooklyn, NY',
-      'units': 3,
-      'status': 'medium',
-    },
-    {
-      'name': 'Red Cross Station C',
-      'distance': '12.1 km',
-      'city': 'Queens, NY',
-      'units': 0,
-      'status': 'low',
-    },
-  ];
+  Future<List<Map<String, dynamic>>> _loadBloodBanks() async {
+    try {
+      final bloodBanks = await FirestoreHandler.getUsersByType(my_user.UserTypes.bloodBank.name);
+      
+      final List<Map<String, dynamic>> bloodBankData = [];
+      
+      for (final bank in bloodBanks) {
+        final inventory = await FirestoreHandler.getInventory(bank.id!);
+        
+        final units = _getUnitsForBloodType(inventory, _selectedBloodType);
+        final status = _getStatus(units);
+        
+        bloodBankData.add({
+          'id': bank.id,
+          'name': bank.name ?? 'Unknown Blood Bank',
+          'address': bank.address ?? 'N/A',
+          'units': units,
+          'status': status,
+          'workingHours': bank.workingHours ?? 'N/A',
+        });
+      }
+      
+      return bloodBankData;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  int _getUnitsForBloodType(Inventory? inventory, String bloodType) {
+    if (inventory == null) return 0;
+    
+    switch (bloodType) {
+      case 'A+':
+        return inventory.aPos ?? 0;
+      case 'A-':
+        return inventory.aNeg ?? 0;
+      case 'B+':
+        return inventory.bPos ?? 0;
+      case 'B-':
+        return inventory.bNeg ?? 0;
+      case 'O+':
+        return inventory.oPos ?? 0;
+      case 'O-':
+        return inventory.oNeg ?? 0;
+      case 'AB+':
+        return inventory.abPos ?? 0;
+      case 'AB-':
+        return inventory.abNeg ?? 0;
+      default:
+        return 0;
+    }
+  }
+
+  String _getStatus(int units) {
+    if (units >= 10) {
+      return 'high';
+    } else if (units >= 3) {
+      return 'medium';
+    } else {
+      return 'low';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +117,6 @@ class _BloodAvailabilityScreenState extends State<BloodAvailabilityScreen> {
         ),
       ),
       centerTitle: true,
-      leading: const Icon(Icons.arrow_back, color: Color(0xFFE53935)),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(50),
         child: Column(
@@ -147,8 +188,9 @@ class _BloodAvailabilityScreenState extends State<BloodAvailabilityScreen> {
               itemBuilder: (context, index) {
                 bool isSelected = _selectedBloodType == _bloodTypes[index];
                 return GestureDetector(
-                  onTap: () =>
-                      setState(() => _selectedBloodType = _bloodTypes[index]),
+                  onTap: () {
+                    setState(() => _selectedBloodType = _bloodTypes[index]);
+                  },
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     width: 55,
@@ -223,12 +265,41 @@ class _BloodAvailabilityScreenState extends State<BloodAvailabilityScreen> {
 
   // --- قائمة النتائج ---
   Widget _buildResultsList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: _locations.length,
-      itemBuilder: (context, index) {
-        final item = _locations[index];
-        return _buildLocationCard(item);
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _loadBloodBanks(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Error: ${snapshot.error}',
+              style: const TextStyle(color: Colors.white),
+            ),
+          );
+        }
+
+        final locations = snapshot.data ?? [];
+
+        if (locations.isEmpty) {
+          return const Center(
+            child: Text(
+              'No blood banks found',
+              style: TextStyle(color: Colors.grey),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: locations.length,
+          itemBuilder: (context, index) {
+            final item = locations[index];
+            return _buildLocationCard(item);
+          },
+        );
       },
     );
   }
@@ -268,10 +339,18 @@ class _BloodAvailabilityScreenState extends State<BloodAvailabilityScreen> {
               children: [
                 const SizedBox(height: 4),
                 Text(
-                  "${item['distance']} • ${item['city']}",
+                  item['address'] ?? 'N/A',
                   style: const TextStyle(
                     color: Color(0xFF666666),
                     fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item['workingHours'] ?? 'N/A',
+                  style: const TextStyle(
+                    color: Color(0xFF666666),
+                    fontSize: 12,
                   ),
                 ),
               ],

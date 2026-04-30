@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:www/Backend/FirestoreHandler.dart';
 import 'package:www/Backend/cash/shared_pref.dart';
 import 'package:www/Backend/models/Request.dart';
-import 'package:www/data/requests_store.dart'; // استيراد ملف التخزين الموحد
+import 'package:www/bloodbank%20screens/bloodbank_home.dart';
+import 'package:www/data/requests_store.dart';
+
+import 'hospital_home.dart'; // استيراد ملف التخزين الموحد
 
 class RequestBloodUnitsScreen extends StatefulWidget {
   const RequestBloodUnitsScreen({super.key});
@@ -125,7 +128,9 @@ class _RequestBloodUnitsScreenState extends State<RequestBloodUnitsScreen> {
                     return;
                   }
                   var uid = FirebaseAuth.instance.currentUser?.uid;
-                  var name = SharedPref.getUser()?.name ?? "";
+                  var user = await SharedPref.getUser();
+                  var name = user?.name ?? "";
+
 
                   await FirestoreHandler.createReq(Request(
                     reqSender: ReqSender.hospital.name,
@@ -139,6 +144,7 @@ class _RequestBloodUnitsScreenState extends State<RequestBloodUnitsScreen> {
                     hospitalName: name,
 
                   ));
+                  refreshHospitalHome.value = !refreshHospitalHome.value;
                   Navigator.pop(context); // العودة للشاشة السابقة
                 },
                 child: const Text(

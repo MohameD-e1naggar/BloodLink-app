@@ -16,7 +16,7 @@ class SharedPref {
     try {
       sharedPreferences = await SharedPreferences.getInstance();
     } catch (e) {
-      print('❌ SharedPref.init() failed: $e');
+      print('SharedPref.init() failed: $e');
       rethrow;
     }
   }
@@ -26,13 +26,12 @@ class SharedPref {
       await sharedPreferences.clear();
       return true;
     } catch (e) {
-      print('❌ SharedPref.clear() failed: $e');
+      print('SharedPref.clear() failed: $e');
       return false;
     }
   }
 
-  /// Safely saves a User to SharedPreferences
-  /// Returns true if successful, false otherwise
+
   static Future<bool> setUser(User? user) async {
     try {
       if (user == null) {
@@ -69,18 +68,18 @@ class SharedPref {
       final success = await sharedPreferences.setString(_reqsKey, jsonString);
       
       if (!success) {
-        print('⚠️ SharedPref.setReqs() returned false');
+        print('SharedPref.setReqs() returned false');
       }
       return success;
     } catch (e) {
-      print('❌ SharedPref.setReqs() failed: $e');
+      print('SharedPref.setReqs() failed: $e');
       return false;
     }
   }
 
   /// Safely retrieves User from SharedPreferences
   /// Returns null if not found or on error
-  static User? getUser() {
+  static Future<User?> getUser() async {
     try {
       final jsonString = sharedPreferences.getString(_userKey);
       
@@ -91,14 +90,13 @@ class SharedPref {
       final map = jsonDecode(jsonString) as Map<String, dynamic>;
       return User.fromMap(map);
     } catch (e) {
-      print('❌ SharedPref.getUser() failed: $e');
+      print('SharedPref.getUser() failed: $e');
       return null;
     }
   }
 
-  /// Safely retrieves list of Requests from SharedPreferences
-  /// Returns empty list if not found or on error
-  static List<Request> getReqs() {
+
+  static Future<List<Request>> getReqs() async {
     try {
       final jsonString = sharedPreferences.getString(_reqsKey);
       
@@ -112,14 +110,14 @@ class SharedPref {
             try {
               return Request.fromMap(item as Map<String, dynamic>);
             } catch (e) {
-              print('⚠️ Failed to parse Request item: $e');
+              print('Failed to parse Request item: $e');
               return null;
             }
           })
           .whereType<Request>() // Filters out null values
           .toList();
     } catch (e) {
-      print('❌ SharedPref.getReqs() failed: $e');
+      print('SharedPref.getReqs() failed: $e');
       return [];
     }
   }
@@ -130,7 +128,7 @@ class SharedPref {
       final success = await sharedPreferences.remove(key);
       return success;
     } catch (e) {
-      print('❌ SharedPref.removeKey($key) failed: $e');
+      print('SharedPref.removeKey($key) failed: $e');
       return false;
     }
   }

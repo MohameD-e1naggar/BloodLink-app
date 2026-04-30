@@ -45,12 +45,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   IconButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RoleSelectionScreen(),
-                        ),
-                      );
+                      Navigator.pop(context);
+                      //     .pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => const RoleSelectionScreen(),
+                      //   ),
+                      // );
                     },
                     icon: const Icon(
                       Icons.arrow_back_ios_new,

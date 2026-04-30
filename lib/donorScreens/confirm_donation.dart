@@ -53,7 +53,8 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
 
   void _confirmBooking() async {
     var uid = FirebaseAuth.instance.currentUser!.uid;
-    var bloodType = SharedPref.getUser()?.bloodType;
+    my_user.User? user = await SharedPref.getUser();
+    var bloodType = user?.bloodType ?? "";
     await FirestoreHandler.createReq(Request(
       bloodBankId: widget.bloodBank.id,
       donorId: uid,

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:www/Backend/models/Request.dart';
 import 'package:www/Backend/models/Inventory.dart';
 import 'models/User.dart' as my_user;
@@ -176,6 +175,11 @@ class FirestoreHandler{
     return querySnapshot.docs
         .map((doc) => doc.data())
         .toList();
+  }
+
+  static Future<void> deleteRequest(String requestId) async {
+    final collection = getReqCollection();
+    await collection.doc(requestId).delete();
   }
 
 }

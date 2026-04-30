@@ -19,110 +19,115 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   late my_user.User user;
   @override
   Widget build(BuildContext context) {
-    user = SharedPref.getUser() ?? my_user.User(type: 'donor');
-        return Scaffold(
-          backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-          appBar: AppBar(
-            leading: IconButton(
-                onPressed: () async {
-                  SharedPref.clear();
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder:(context)=> LoginScreen()));
-                },
-                icon: Icon(Icons.logout)),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            automaticallyImplyLeading:
-                false, // إزالة زر الرجوع - الـ BottomNav بيتحكم
-            title: const Text(
-              'Profile Settings',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            centerTitle: true,
-            actions: [
-              TextButton(
-                onPressed: () {},
-                child: const Text(
-                  'Save',
+
+        return FutureBuilder(
+          future: SharedPref.getUser(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+
+            if (snapshot.hasError) {
+              return Text("Error: ${snapshot.error}");
+            }
+
+            if (!snapshot.hasData) {
+              return Text("No user found");
+            }
+
+            final user = snapshot.data!;
+            return Scaffold(
+              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+              appBar: AppBar(
+                leading: IconButton(
+                    onPressed: () async {
+                      SharedPref.clear();
+                      await FirebaseAuth.instance.signOut();
+                      Navigator.pushReplacement(context,
+                          MaterialPageRoute(builder:(context)=> LoginScreen()));
+                    },
+                    icon: Icon(Icons.logout)),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                automaticallyImplyLeading:
+                    false, //
+                title: const Text(
+                  'Profile Settings',
                   style: TextStyle(
-                    color: Color.fromARGB(255, 196, 0, 29),
-                    fontSize: 16,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
+                ),
+                centerTitle: true,
+              ),
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildAvatarSection(user.name ?? "", user.id ?? ""),
+                    const SizedBox(height: 30),
+                    _buildSectionHeader(Icons.person_outline, 'PERSONAL INFO'),
+                    _buildInfoCard([
+                      _buildInfoTile('Full Name', user.name ?? ""),
+                      _buildDivider(),
+                      _buildInfoTile('Email Address', user.email ??""),
+                      _buildDivider(),
+                      _buildInfoTile('Phone Number', user.phoneNumber ??""),
+                    ]),
+                    const SizedBox(height: 25),
+                    _buildSectionHeader(
+                      Icons.medical_services_outlined,
+                      'MEDICAL INFO',
+                    ),
+                    _buildInfoCard([
+                      _buildInfoTile('Blood Type', user.bloodType ??""),
+                      _buildDivider(),
+                      _buildInfoTile('Last Donation', user.donorLastDonation ??""),
+                      _buildDivider(),
+                      _buildInfoTile(
+                        'Medical Conditions',
+                        "Takes Medication: ${user.takesMedication ??false ?"Yes":"No"}\n"
+                            "Had Surgery: ${user.hadSurgery ??false ?"Yes":"No" }\n"
+                            "Has Anemia: ${user.hasAnemia ??false ?"Yes":"No" }\n"
+                            "Has Chronic Diseases: ${user.hasChronicDiseases ??false ?"Yes":"No" }\n",
+                        isLast: true,
+                      ),
+                    ]),
+                    const SizedBox(height: 25),
+                    _buildSectionHeader(Icons.location_on_outlined, 'LOCATION'),
+                    _buildInfoCard([
+                      const ListTile(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 5,
+                        ),
+                        title: Text(
+                          'Preferred Donation Center',
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                        subtitle: Text(
+                          'Al-Maadi Blood Bank',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.map_outlined,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                      ),
+                    ]),
+                    const SizedBox(height: 40),
+                  ],
                 ),
               ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                _buildAvatarSection(user.name ?? "", user.id ?? ""),
-                const SizedBox(height: 30),
-                _buildSectionHeader(Icons.person_outline, 'PERSONAL INFO'),
-                _buildInfoCard([
-                  _buildInfoTile('Full Name', user.name ?? ""),
-                  _buildDivider(),
-                  _buildInfoTile('Email Address', user.email ??""),
-                  _buildDivider(),
-                  _buildInfoTile('Phone Number', user.phoneNumber ??""),
-                ]),
-                const SizedBox(height: 25),
-                _buildSectionHeader(
-                  Icons.medical_services_outlined,
-                  'MEDICAL INFO',
-                ),
-                _buildInfoCard([
-                  _buildInfoTile('Blood Type', user.bloodType ??""),
-                  _buildDivider(),
-                  _buildInfoTile('Last Donation', user.donorLastDonation ??""),
-                  _buildDivider(),
-                  _buildInfoTile(
-                    'Medical Conditions',
-                    "Takes Medication: ${user.takesMedication ??false ?"Yes":"No"}\n"
-                        "Had Surgery: ${user.hadSurgery ??false ?"Yes":"No" }\n"
-                        "Has Anemia: ${user.hasAnemia ??false ?"Yes":"No" }\n"
-                        "Has Chronic Diseases: ${user.hasChronicDiseases ??false ?"Yes":"No" }\n",
-                    isLast: true,
-                  ),
-                ]),
-                const SizedBox(height: 25),
-                _buildSectionHeader(Icons.location_on_outlined, 'LOCATION'),
-                _buildInfoCard([
-                  const ListTile(
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 5,
-                    ),
-                    title: Text(
-                      'Preferred Donation Center',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    subtitle: Text(
-                      'Al-Maadi Blood Bank',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: Icon(
-                      Icons.map_outlined,
-                      color: Colors.grey,
-                      size: 20,
-                    ),
-                  ),
-                ]),
-                const SizedBox(height: 40),
-              ],
-            ),
-          ),
+            );
+          }
         );
       }
   }
@@ -173,7 +178,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ),
         ),
          Text(
-          'Donor ID: $id',
+          'Donor ID: ${id.substring(0,9)}',
           style: TextStyle(color: Colors.grey, fontSize: 14),
         ),
       ],
