@@ -89,7 +89,7 @@ class RoleSelectionScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          const HospitalLoginScreen(isAdmin: false),
+                          const HospitalLoginScreen(),
                     ),
                   ),
                 ),
@@ -105,7 +105,7 @@ class RoleSelectionScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          const BloodBank_Login(isAdmin: false),
+                          const BloodBank_Login(),
                     ),
                   ),
                 ),

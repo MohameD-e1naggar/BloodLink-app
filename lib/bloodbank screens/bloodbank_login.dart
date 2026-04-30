@@ -4,9 +4,8 @@ import 'package:www/bloodbank%20screens/bb_wrapper.dart';
 import 'package:www/bloodbank%20screens/bloodbank_registration.dart';
 
 class BloodBank_Login extends StatefulWidget {
-  final bool isAdmin;
 
-  const BloodBank_Login({super.key, required this.isAdmin});
+  const BloodBank_Login({super.key});
 
   @override
   State<BloodBank_Login> createState() => _BloodBank_LoginState();
@@ -52,7 +51,7 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
                 const SizedBox(height: 20),
                 Center(
                   child: Icon(
-                    widget.isAdmin ? Icons.local_hospital : Icons.science,
+                    Icons.science,
                     color: const Color.fromARGB(255, 196, 0, 29),
                     size: 80,
                   ),
@@ -60,7 +59,7 @@ class _BloodBank_LoginState extends State<BloodBank_Login> {
                 const SizedBox(height: 24),
                 Center(
                   child: Text(
-                    widget.isAdmin ? "HOSPITAL LOGIN" : "BLOOD BANK LOGIN",
+                    "BLOOD BANK LOGIN",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 26,

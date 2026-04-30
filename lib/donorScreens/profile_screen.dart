@@ -21,7 +21,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   Widget build(BuildContext context) {
 
         return FutureBuilder(
-          future: SharedPref.getUser(),
+          future: FirebaseAuth.instance.currentUser != null 
+              ? FirestoreHandler.getUser(FirebaseAuth.instance.currentUser!.uid)
+              : Future.value(null),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
@@ -36,6 +38,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             }
 
             final user = snapshot.data!;
+
             return Scaffold(
               backgroundColor: const Color.fromARGB(255, 0, 0, 0),
               appBar: AppBar(

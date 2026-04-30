@@ -75,6 +75,39 @@ class FirestoreHandler{
       'donorsAcceptedCriticalReqNum': FieldValue.increment(1),
     });
   }
+
+  static Future<void> updateReqUnitsCounter(String requestId) async {
+    final docRef = getReqCollection().doc(requestId);
+    
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) return;
+      
+      final req = snapshot.data();
+      if (req == null) return;
+      
+      int currentUnits = req.units ?? 0;
+      if (currentUnits > 0) {
+        currentUnits -= 1;
+        
+        transaction.update(docRef, {
+          'units': currentUnits,
+          if (currentUnits == 0) 'reqStatus': RequestStatus.approved.name,
+        });
+      }
+    });
+  }
+
+  static Future<void> updateReqBloodBank(String requestId,String bloodBankName,String bloodBankId) async {
+    final collection = getReqCollection();
+
+    await collection.doc(requestId).update({
+      'bloodBankName': bloodBankName,
+      'bloodBankId' : bloodBankId,
+    });
+  }
+
+
   static DocumentReference<Inventory> getInventoryDoc(String userId){
     var userCollection = getUserCollection();
     var userDoc = userCollection.doc(userId);
@@ -189,6 +222,29 @@ class FirestoreHandler{
   static Future<void> deleteRequest(String requestId) async {
     final collection = getReqCollection();
     await collection.doc(requestId).delete();
+  }
+
+  // --- Local Request States stored in Firestore User Document ---
+
+  static Future<void> addAcceptedReq(String userId, String requestId) async {
+    final doc = getUserCollection().doc(userId);
+    await doc.update({
+      'acceptedCriticalReqs': FieldValue.arrayUnion([requestId])
+    });
+  }
+
+  static Future<void> addRejectedReq(String userId, String requestId) async {
+    final doc = getUserCollection().doc(userId);
+    await doc.update({
+      'rejectedCriticalReqs': FieldValue.arrayUnion([requestId])
+    });
+  }
+
+  static Future<void> addHiddenReq(String userId, String requestId) async {
+    final doc = getUserCollection().doc(userId);
+    await doc.update({
+      'hiddenCriticalReqs': FieldValue.arrayUnion([requestId])
+    });
   }
 
 }

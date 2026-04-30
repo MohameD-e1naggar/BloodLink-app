@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
 import 'package:www/bloodbank%20screens/bloodbank_login.dart';
 import '../Backend/models/User.dart' as my_user;
 
@@ -14,7 +15,9 @@ class BloodBankProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Handle null user case
     return FutureBuilder(
-      future: SharedPref.getUser(),
+      future: FirebaseAuth.instance.currentUser != null 
+          ? FirestoreHandler.getUser(FirebaseAuth.instance.currentUser!.uid)
+          : Future.value(null),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
@@ -39,7 +42,7 @@ class BloodBankProfileScreen extends StatelessWidget {
                   await SharedPref.clear();
                   await FirebaseAuth.instance.signOut();
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder:(context)=> BloodBank_Login(isAdmin: false,)));
+                      MaterialPageRoute(builder:(context)=> BloodBank_Login()));
 
                 },
                 icon: Icon(Icons.logout)),
@@ -48,12 +51,6 @@ class BloodBankProfileScreen extends StatelessWidget {
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             centerTitle: true,
-            actions: const [
-              Padding(
-                padding: EdgeInsets.only(right: 16),
-                child: Icon(Icons.settings, color: Colors.white),
-              ),
-            ],
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20),

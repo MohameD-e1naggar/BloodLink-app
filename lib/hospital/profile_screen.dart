@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:www/Backend/FirestoreHandler.dart';
 import 'package:www/Backend/models/User.dart' as my_user;
 
 class profile extends StatefulWidget {
@@ -15,7 +16,9 @@ class _profileState extends State<profile> {
   Widget build(BuildContext context) {
 
     return FutureBuilder<my_user.User?>(
-      future: SharedPref.getUser(),
+      future: FirebaseAuth.instance.currentUser != null 
+          ? FirestoreHandler.getUser(FirebaseAuth.instance.currentUser!.uid)
+          : Future.value(null),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:www/Backend/cash/shared_pref.dart';
 import 'package:www/Backend/models/Request.dart';
 import 'package:www/Backend/FirestoreHandler.dart';
 
@@ -75,6 +76,7 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
         return Scaffold(
           backgroundColor: const Color(0xFF0F0F0F),
           appBar: AppBar(
+            automaticallyImplyLeading: false,
             title: const Text(
               "Blood Bank Requests",
               style: TextStyle(color: Colors.white),
@@ -179,8 +181,15 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () =>
-                          _updateStatus(req, RequestStatus.approved),
+                      onPressed: () async{
+                        var user = await SharedPref.getUser();
+                        await FirestoreHandler.updateReqBloodBank(
+                            req.id ?? "",
+                            user?.name ?? "",
+                            user?.id ?? ""
+                        );
+                          _updateStatus(req, RequestStatus.approved);
+                          },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFC4001D),
                       ),

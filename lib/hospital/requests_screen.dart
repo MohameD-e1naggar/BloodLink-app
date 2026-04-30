@@ -24,7 +24,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
         .where('hospitalId', isEqualTo: userId)
         .get();
 
-    final requests = querySnapshot.docs.map((doc) => doc.data()).toList();
+    var requests = querySnapshot.docs.map((doc) => doc.data()).toList();
+    
+    requests = requests.where((r) => r.reqStatus != RequestStatus.fulfilled.name).toList();
 
     // Filter based on selected filter
     if (_selectedFilter == 'pending') {
@@ -232,7 +234,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Blood Bank: ${req.bloodBankName ?? 'Unknown'}",
+                        "${isEmergency ? "CRITICAL Request" : "Normal Request"}\n"
+                            "${req.units == 0 ? "By Donors" : "Blood Bank ${req.bloodBankName ?? "...."}"}",
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -295,29 +298,59 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   ),
                 ],
               )
-            else if (status == RequestStatus.approved.name)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.green, size: 20),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        "Blood bank approved your request",
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+            else if (status == RequestStatus.approved.name )
+              Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  ],
-                ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            req.units == 0
+                              ? "Request Approved (Donors ready)"
+                              : "Blood bank ${req.bloodBankName ?? ""} approved your request",
+                            style: const TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  req.units == 0 ?SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (req.id != null) {
+                          await FirestoreHandler.updateStatus(req.id!, RequestStatus.fulfilled);
+                          if (mounted) {
+                            setState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Request marked as fulfilled')),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        )
+                      ),
+                      child: const Text("Mark as Fulfilled", style: TextStyle(color: Colors.white)),
+                    ),
+                  ) : SizedBox()
+                ],
               )
             else if (status == RequestStatus.rejected.name)
               Container(

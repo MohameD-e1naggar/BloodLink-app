@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:www/Backend/models/Request.dart';
 import 'package:www/Backend/FirestoreHandler.dart';
-import 'package:www/Backend/cash/shared_pref.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DonationDetailsScreen extends StatefulWidget {
   final Request request;
@@ -32,19 +32,24 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
 
   Future<void> _loadLocalStatus() async {
     if (widget.request.id != null) {
-      final accepted = await SharedPref.getAcceptedReqs();
-      final rejected = await SharedPref.getRejectedReqs();
-      if (mounted) {
-        setState(() {
-          isAcceptedLocal = accepted.contains(widget.request.id) || widget.isAccepted;
-          isRejectedLocal = rejected.contains(widget.request.id);
-          isLoadingLocalStatus = false;
-        });
+      var uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        var user = await FirestoreHandler.getUser(uid);
+        if (user != null && mounted) {
+          final accepted = user.acceptedCriticalReqs ?? [];
+          final rejected = user.rejectedCriticalReqs ?? [];
+          setState(() {
+            isAcceptedLocal = accepted.contains(widget.request.id) || widget.isAccepted;
+            isRejectedLocal = rejected.contains(widget.request.id);
+            isLoadingLocalStatus = false;
+          });
+          return;
+        }
       }
-    } else {
-      if (mounted) {
-        setState(() => isLoadingLocalStatus = false);
-      }
+    }
+    
+    if (mounted) {
+      setState(() => isLoadingLocalStatus = false);
     }
   }
 
@@ -73,7 +78,11 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
     await FirestoreHandler.updateDonorsCounter(
       widget.request.id!,
     );
-    await SharedPref.addAcceptedReq(widget.request.id!);
+    await FirestoreHandler.updateReqUnitsCounter(widget.request.id!);
+    var uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      await FirestoreHandler.addAcceptedReq(uid, widget.request.id!);
+    }
     
     if (mounted) {
       setState(() => isAcceptedLocal = true);
@@ -217,6 +226,24 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                               style: const TextStyle(color: Colors.white, fontSize: 16),
                               textAlign: TextAlign.center,
                             ),
+                            const SizedBox(height: 15),
+                            ElevatedButton(
+                              onPressed: () async {
+                                if (widget.request.id != null) {
+                                  var uid = FirebaseAuth.instance.currentUser?.uid;
+                                  if (uid != null) {
+                                    await FirestoreHandler.addHiddenReq(uid, widget.request.id!);
+                                  }
+                                }
+                                if (context.mounted) {
+                                  Navigator.pop(context, true);
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey[800],
+                              ),
+                              child: const Text("Remove from my feed", style: TextStyle(color: Colors.white)),
+                            )
                           ],
                         ),
                       )
@@ -240,7 +267,10 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                             ElevatedButton(
                               onPressed: () async {
                                 if (widget.request.id != null) {
-                                  await SharedPref.addHiddenReq(widget.request.id!);
+                                  var uid = FirebaseAuth.instance.currentUser?.uid;
+                                  if (uid != null) {
+                                    await FirestoreHandler.addHiddenReq(uid, widget.request.id!);
+                                  }
                                 }
                                 if (context.mounted) {
                                   Navigator.pop(context, true);
@@ -261,7 +291,10 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                             child: OutlinedButton(
                               onPressed: () async {
                                 if (widget.request.id != null) {
-                                  await SharedPref.addRejectedReq(widget.request.id!);
+                                  var uid = FirebaseAuth.instance.currentUser?.uid;
+                                  if (uid != null) {
+                                    await FirestoreHandler.addRejectedReq(uid, widget.request.id!);
+                                  }
                                   setState(() => isRejectedLocal = true);
                                 }
                               },

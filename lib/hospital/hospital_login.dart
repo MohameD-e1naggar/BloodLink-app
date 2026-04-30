@@ -5,9 +5,9 @@ import 'package:www/hospital/main_wrapper.dart';
 import 'package:www/hospital/hospital_registration_screen.dart';
 
 class HospitalLoginScreen extends StatefulWidget {
-  final bool isAdmin;
 
-  const HospitalLoginScreen({super.key, required this.isAdmin});
+
+  const HospitalLoginScreen({super.key});
 
   @override
   State<HospitalLoginScreen> createState() => _HospitalLoginScreenState();
@@ -53,7 +53,7 @@ class _HospitalLoginScreenState extends State<HospitalLoginScreen> {
                 const SizedBox(height: 20),
                 Center(
                   child: Icon(
-                    widget.isAdmin ? Icons.local_hospital : Icons.science,
+                    Icons.local_hospital,
                     color: const Color.fromARGB(255, 196, 0, 29),
                     size: 80,
                   ),
@@ -61,7 +61,7 @@ class _HospitalLoginScreenState extends State<HospitalLoginScreen> {
                 const SizedBox(height: 24),
                 Center(
                   child: Text(
-                    widget.isAdmin ? "HOSPITAL LOGIN" : "BLOOD BANK LOGIN",
+                    "HOSPITAL LOGIN",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 26,

@@ -26,6 +26,10 @@ class User {
   final String? address;
   final String? workingHours;
   final String type;
+  
+  final List<String>? acceptedCriticalReqs;
+  final List<String>? rejectedCriticalReqs;
+  final List<String>? hiddenCriticalReqs;
 
   User({
     this.id,
@@ -46,7 +50,10 @@ class User {
     this.adminNationalId,
     this.address,
     this.workingHours,
-    required this.type
+    required this.type,
+    this.acceptedCriticalReqs,
+    this.rejectedCriticalReqs,
+    this.hiddenCriticalReqs,
   });
 
   // Convert object → Firestore
@@ -71,6 +78,9 @@ class User {
       'address': address,
       'workingHours': workingHours,
       'type': type,
+      'acceptedCriticalReqs': acceptedCriticalReqs ?? [],
+      'rejectedCriticalReqs': rejectedCriticalReqs ?? [],
+      'hiddenCriticalReqs': hiddenCriticalReqs ?? [],
     };
   }
 
@@ -96,6 +106,9 @@ class User {
       address: map['address'],
       workingHours: map['workingHours'],
       type: map['type'],
+      acceptedCriticalReqs: map['acceptedCriticalReqs'] != null ? List<String>.from(map['acceptedCriticalReqs']) : [],
+      rejectedCriticalReqs: map['rejectedCriticalReqs'] != null ? List<String>.from(map['rejectedCriticalReqs']) : [],
+      hiddenCriticalReqs: map['hiddenCriticalReqs'] != null ? List<String>.from(map['hiddenCriticalReqs']) : [],
     );
   }
 
@@ -119,7 +132,10 @@ class User {
     String? adminNationalId,
     String? address,
     String? workingHours,
-    String? type
+    String? type,
+    List<String>? acceptedCriticalReqs,
+    List<String>? rejectedCriticalReqs,
+    List<String>? hiddenCriticalReqs,
   }) {
     return User(
       id: id ?? this.id,
@@ -141,6 +157,9 @@ class User {
       address: address ?? this.address,
       workingHours: workingHours ?? this.workingHours,
       type: type ?? this.type,
+      acceptedCriticalReqs: acceptedCriticalReqs ?? this.acceptedCriticalReqs,
+      rejectedCriticalReqs: rejectedCriticalReqs ?? this.rejectedCriticalReqs,
+      hiddenCriticalReqs: hiddenCriticalReqs ?? this.hiddenCriticalReqs,
     );
   }
 }

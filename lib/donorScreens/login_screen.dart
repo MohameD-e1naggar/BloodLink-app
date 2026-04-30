@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: _showForgotPasswordDialog,
                       child: Text(
                         "Forgot Password?",
                         style: TextStyle(
@@ -139,14 +140,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: (){
+                        onPressed: _isLoading ? null : () {
                           login();
-                          // Navigator.pushReplacement(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (context) => const MainWrapper(),
-                          //   ),
-                          // );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
@@ -155,15 +150,22 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                        child: const Text(
-                          "LOGIN",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text(
+                                "LOGIN",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -210,6 +212,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void login() async {
+    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter both email and password')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
@@ -217,20 +230,21 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-
       if (credential.user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const MainWrapper(),
-          ),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MainWrapper(),
+            ),
+          );
+        }
       }
 
     } on FirebaseAuthException catch (e) {
       String message = 'Something went wrong';
 
-      if (e.code == 'user-not-found') {
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
         message = 'No user found for that email';
       } else if (e.code == 'wrong-password') {
         message = 'Wrong password';
@@ -238,11 +252,119 @@ class _LoginScreenState extends State<LoginScreen> {
         message = 'Invalid email format';
       }
 
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _showForgotPasswordDialog() {
+    final TextEditingController resetEmailController = 
+        TextEditingController(text: _emailController.text.trim());
+    bool isResetting = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1A1A1A),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('Reset Password', style: TextStyle(color: Colors.white)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Enter your email address to receive a password reset link.',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 15),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: TextField(
+                    controller: resetEmailController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                      hintText: "Email address",
+                      hintStyle: TextStyle(color: Colors.white24),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isResetting ? null : () => Navigator.pop(context),
+                child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                onPressed: isResetting
+                    ? null
+                    : () async {
+                        final email = resetEmailController.text.trim();
+                        if (email.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please enter your email')),
+                          );
+                          return;
+                        }
+
+                        setDialogState(() => isResetting = true);
+
+                        try {
+                          await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Password reset link sent to your email!')),
+                            );
+                          }
+                        } on FirebaseAuthException catch (e) {
+                          String msg = 'Failed to send reset email';
+                          if (e.code == 'user-not-found' || e.code == 'invalid-credential') msg = 'No user found for that email';
+                          if (e.code == 'invalid-email') msg = 'Invalid email format';
+                          
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(msg)),
+                            );
+                          }
+                        } finally {
+                          if (context.mounted) {
+                            setDialogState(() => isResetting = false);
+                          }
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC4001D),
+                ),
+                child: isResetting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : const Text('Send Link', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
   Widget _buildLabel(String text) {
     return Padding(
