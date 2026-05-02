@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +5,7 @@ import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/blood_request.dart';
 
 import 'package:www/features/hospital/home/hospital_home_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class HospitalBloodRequestScreen extends StatefulWidget {
   final String hospitalName;
@@ -42,17 +42,19 @@ class _HospitalBloodRequestScreenState extends State<HospitalBloodRequestScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Request Blood',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: cs.onSurface),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: cs.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -61,11 +63,11 @@ class _HospitalBloodRequestScreenState extends State<HospitalBloodRequestScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Blood Type', style: TextStyle(color: Colors.white)),
+            Text('Blood Type', style: TextStyle(color: cs.onSurface)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              dropdownColor: const Color(0xFF1A1A1A),
-              style: const TextStyle(color: Colors.white),
+              dropdownColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
+              style: TextStyle(color: cs.onSurface),
               value: _selectedBloodType,
               items: _bloodTypes
                   .map(
@@ -73,33 +75,33 @@ class _HospitalBloodRequestScreenState extends State<HospitalBloodRequestScreen>
                   )
                   .toList(),
               onChanged: (val) => setState(() => _selectedBloodType = val),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 filled: true,
-                fillColor: Color(0xFF1A1A1A),
-                border: OutlineInputBorder(),
+                fillColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
 
-            const Text('Units', style: TextStyle(color: Colors.white)),
+            Text('Units', style: TextStyle(color: cs.onSurface)),
             const SizedBox(height: 8),
             TextField(
               controller: _quantityController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
+              style: TextStyle(color: cs.onSurface),
+              decoration: InputDecoration(
                 filled: true,
-                fillColor: Color(0xFF1A1A1A),
-                border: OutlineInputBorder(),
+                fillColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
 
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text(
+              title: Text(
                 'STAT / Emergency',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: cs.onSurface),
               ),
               value: _isStatHigh,
               onChanged: (val) => setState(() => _isStatHigh = val),
@@ -112,7 +114,7 @@ class _HospitalBloodRequestScreenState extends State<HospitalBloodRequestScreen>
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC4001D),
+                  backgroundColor: AppColors.redDark,
                 ),
                 onPressed: () async{
                   if (_selectedBloodType == null) {
@@ -138,10 +140,10 @@ class _HospitalBloodRequestScreenState extends State<HospitalBloodRequestScreen>
                   refreshHospitalHome.value = !refreshHospitalHome.value;
                   Navigator.pop(context);
                 },
-                child: const Text(
+                child: Text(
                   'Submit Request',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: cs.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

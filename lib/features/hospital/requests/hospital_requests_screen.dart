@@ -2,7 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/core/models/blood_request.dart';
 import 'package:www/core/services/firestore_service.dart';
-
+import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/services/emergency_reset_service.dart';
 import '../home/hospital_home_screen.dart';
 
 class RequestsScreen extends StatefulWidget {
@@ -91,19 +92,22 @@ class _RequestsScreenState extends State<RequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-          automaticallyImplyLeading: false,
-        title: const Text(
+        automaticallyImplyLeading: false,
+        title: Text(
           "Blood Requests",
-          style: TextStyle(color: Colors.white),
+          style: tt.titleLarge?.copyWith(fontSize: 18),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: cs.onSurface),
             onPressed: () => setState(() {}),
           ),
         ],
@@ -134,7 +138,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   return Center(
                     child: Text(
                       "Error: ${snapshot.error}",
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: cs.onSurface),
                     ),
                   );
                 }
@@ -148,13 +152,16 @@ class _RequestsScreenState extends State<RequestsScreen> {
                       children: [
                         Icon(
                           Icons.bloodtype_outlined,
-                          color: Colors.grey.withOpacity(0.5),
+                          color: cs.onSurface.withValues(alpha: 0.3),
                           size: 64,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           "No requests yet",
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          style: tt.bodyMedium?.copyWith(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
@@ -179,6 +186,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
 
   Widget _buildFilterChip(String label, String filter) {
     final isSelected = _selectedFilter == filter;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return FilterChip(
       label: Text(label),
       selected: isSelected,
@@ -188,12 +197,12 @@ class _RequestsScreenState extends State<RequestsScreen> {
         });
       },
       backgroundColor: Colors.transparent,
-      selectedColor: const Color(0xFFC4001D),
+      selectedColor: AppColors.redDark,
       side: BorderSide(
-        color: isSelected ? const Color(0xFFC4001D) : Colors.grey,
+        color: isSelected ? AppColors.redDark : Colors.grey,
       ),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.grey,
+        color: isSelected ? Colors.white : (isDark ? Colors.grey : Colors.grey[700]),
       ),
     );
   }
@@ -201,13 +210,18 @@ class _RequestsScreenState extends State<RequestsScreen> {
   Widget _buildRequestCard(Request req) {
     final isEmergency = req.urgency == Urgency.critical.name;
     final status = req.reqStatus;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return Card(
-      color: const Color(0xFF1A1A1A),
+      color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
+        side: isDark ? BorderSide.none : BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
       ),
+      elevation: isDark ? 0 : 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -216,8 +230,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
               children: [
                 CircleAvatar(
                   backgroundColor: isEmergency
-                      ? Colors.red.withOpacity(0.2)
-                      : Colors.blue.withOpacity(0.2),
+                      ? Colors.red.withValues(alpha: 0.2)
+                      : Colors.blue.withValues(alpha: 0.2),
                   child: Text(
                     req.bloodType ?? '?',
                     style: TextStyle(
@@ -234,14 +248,13 @@ class _RequestsScreenState extends State<RequestsScreen> {
                       Text(
                         "${isEmergency ? "CRITICAL Request" : "Normal Request"}\n"
                             "${req.units == 0 ? "By Donors" : "Blood Bank ${req.bloodBankName ?? "...."}"}",
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: tt.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         "${req.units} Units • ${req.time ?? 'N/A'}",
-                        style: const TextStyle(
+                        style: tt.bodyMedium?.copyWith(
                           color: Colors.grey,
                           fontSize: 12,
                         ),
@@ -267,14 +280,14 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 ),
               ],
             ),
-            const Divider(color: Color(0xFF333333)),
+            Divider(color: cs.onSurface.withValues(alpha: 0.1)),
             if (status == RequestStatus.pending.name)
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       "Waiting for blood bank response...",
-                      style: TextStyle(
+                      style: tt.bodyMedium?.copyWith(
                         color: Colors.grey,
                         fontSize: 13,
                       ),
@@ -295,13 +308,16 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   ),
                 ],
               )
-            else if (status == RequestStatus.approved.name )
+            else if (status == RequestStatus.approved.name)
               Column(
                 children: [
+                  // Countdown badge for emergency requests
+                  if (isEmergency) _buildCountdownBadge(req.approvedAt),
+                  if (isEmergency) const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -375,6 +391,48 @@ class _RequestsScreenState extends State<RequestsScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCountdownBadge(String? approvedAt) {
+    final remaining = EmergencyResetService.remainingTime(approvedAt);
+    if (remaining == null) return const SizedBox.shrink();
+
+    final label = EmergencyResetService.formatCountdown(remaining);
+    final totalSeconds = remaining.inSeconds;
+    final maxSeconds = const Duration(hours: 6).inSeconds;
+    final fraction = totalSeconds / maxSeconds;
+
+    // Green >4h, orange 2–4h, red <2h
+    final Color badgeColor = fraction > 0.66
+        ? const Color(0xFF43A047)
+        : fraction > 0.33
+            ? Colors.orange
+            : AppColors.redDark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer_outlined, color: badgeColor, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: badgeColor,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

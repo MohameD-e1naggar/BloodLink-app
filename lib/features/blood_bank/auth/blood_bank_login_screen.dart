@@ -6,6 +6,7 @@ import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/core/utiles/ValidatorManager.dart';
 import 'package:www/features/blood_bank/blood_bank_wrapper.dart';
 import 'package:www/features/blood_bank/auth/registration/blood_bank_registration_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class BloodBankLoginScreen extends StatefulWidget {
 
@@ -31,15 +32,17 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF120808),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.white,
+            color: cs.onSurface,
             size: 20,
           ),
           onPressed: () => Navigator.pushReplacementNamed(context, Routes.roleSelectionRoute),
@@ -57,7 +60,7 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
                 Center(
                   child: Icon(
                     Icons.science,
-                    color: const Color.fromARGB(255, 196, 0, 29),
+                    color: AppColors.redDark,
                     size: 80,
                   ),
                 ),
@@ -65,8 +68,8 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
                 Center(
                   child: Text(
                     "BLOOD BANK LOGIN",
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: cs.onSurface,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
@@ -105,7 +108,7 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+                      backgroundColor: AppColors.redDark,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -127,9 +130,9 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       "New provider? ",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5)),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -138,7 +141,7 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
                       child: const Text(
                         "Register Now",
                         style: TextStyle(
-                          color: const Color.fromARGB(255, 196, 0, 29),
+                          color: AppColors.redDark,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -202,10 +205,11 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
   }
 
   Widget _buildLabel(String text) {
+    final cs = Theme.of(context).colorScheme;
     return Text(
       text,
-      style: const TextStyle(
-        color: Colors.white70,
+      style: TextStyle(
+        color: cs.onSurface.withValues(alpha: 0.7),
         fontSize: 14,
         fontWeight: FontWeight.w500,
       ),
@@ -220,21 +224,23 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return TextFormField(
       controller: controller,
       obscureText: isPassword && !_isPasswordVisible,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: cs.onSurface),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.white54, size: 20),
+        hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.3), fontSize: 14),
+        prefixIcon: Icon(icon, color: cs.onSurface.withValues(alpha: 0.5), size: 20),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.white54,
+                  color: cs.onSurface.withValues(alpha: 0.5),
                   size: 20,
                 ),
                 onPressed: () =>
@@ -242,7 +248,7 @@ class _BloodBankLoginScreenState extends State<BloodBankLoginScreen> {
               )
             : null,
         filled: true,
-        fillColor: const Color(0xFF1E1414),
+        fillColor: isDark ? const Color(0xFF1E1414) : AppColors.lightCard,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,

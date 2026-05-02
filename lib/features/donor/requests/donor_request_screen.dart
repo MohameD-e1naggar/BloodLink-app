@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/models/blood_request.dart';
 import 'package:www/core/models/user.dart' as my_user;
-import 'package:www/features/donor/requests/donor_request_details_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class MyRequestsScreen extends StatefulWidget {
   const MyRequestsScreen({super.key});
@@ -39,21 +39,23 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
             }
 
             List<Request> requests = snapshot.data!
-                .where((req) => req.reqStatus != RequestStatus.fulfilled.name)
+                .where((req) => req.reqStatus != RequestStatus.fulfilled.name )
                 .toList();
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final cs = Theme.of(context).colorScheme;
             return Scaffold(
-              backgroundColor: Colors.black,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 automaticallyImplyLeading: false,
-                title: const Text(
+                title: Text(
                   'My Requests',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.bold),
                 ),
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    icon: Icon(Icons.refresh, color: cs.onSurface),
                     onPressed: () => setState(() {}),
                   ),
                 ],
@@ -63,10 +65,10 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Active Appointments',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: cs.onSurface,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -74,10 +76,10 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                     const SizedBox(height: 20),
                     Expanded(
                       child: requests.isEmpty
-                          ? const Center(
+                          ? Center(
                               child: Text(
                                 "No donation requests yet.",
-                                style: TextStyle(color: Colors.grey),
+                                style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
                               ),
                             )
                           : ListView.builder(
@@ -105,13 +107,15 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
     BuildContext context, {
     required Request req
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
       ),
       child: Column(
         children: [
@@ -124,8 +128,8 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                   children: [
                     Text(
                       req.bloodBankName ?? "",
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: cs.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -133,7 +137,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                     const SizedBox(height: 4),
                     Text(
                       "${req.date} • ${req.time}",
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 12),
                     ),
                   ],
                 ),
@@ -141,13 +145,13 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: AppColors.redDark.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   req.bloodType ?? "",
                   style: const TextStyle(
-                    color: Color(0xFFC4001D),
+                    color: AppColors.redDark,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -169,12 +173,12 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                     if (mounted) setState(() {});
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFC4001D),
+                    backgroundColor: AppColors.redDark,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Donation Details',
                     style: TextStyle(color: Colors.white),
                   ),

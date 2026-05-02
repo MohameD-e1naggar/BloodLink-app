@@ -3,6 +3,7 @@ import 'package:www/core/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:www/features/blood_bank/auth/registration/blood_bank_responsible_person_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class BloodBankRegistrationScreen extends StatefulWidget {
   const BloodBankRegistrationScreen({super.key});
@@ -42,7 +43,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDarkMode ? const Color(0xFF120808) : Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(isDark: isDarkMode),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -59,7 +60,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: isDarkMode ? Colors.white : Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -150,19 +151,19 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: isDarkMode ? Colors.white70 : Colors.black87,
+                    color: isDarkMode ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 8),
                 IntlPhoneField(
                   initialCountryCode: 'EG',
                   dropdownTextStyle: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: isDarkMode ? Colors.white : Theme.of(context).colorScheme.onSurface,
                   ),
                   style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: isDarkMode ? Colors.white : Theme.of(context).colorScheme.onSurface,
                   ),
-                  cursorColor: const Color.fromARGB(255, 196, 0, 29),
+                  cursorColor: AppColors.redDark,
                   onChanged: (phone) => _phoneNumber = phone.completeNumber,
                   decoration: _inputDecoration(
                     isDark: isDarkMode,
@@ -236,7 +237,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+          backgroundColor: AppColors.redDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -264,7 +265,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
         color: isDark ? Colors.white30 : Colors.grey.shade400,
       ),
       filled: true,
-      fillColor: isDark ? const Color(0xFF1E1414) : Colors.white,
+      fillColor: isDark ? const Color(0xFF1E1414) : AppColors.lightCard,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
         borderSide: BorderSide.none,
@@ -281,7 +282,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
         borderSide: const BorderSide(
-          color: const Color.fromARGB(255, 196, 0, 29),
+          color: AppColors.redDark,
           width: 1.5,
         ),
       ),
@@ -295,7 +296,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
       leading: IconButton(
         icon: Icon(
           Icons.arrow_back,
-          color: isDark ? Colors.white : Colors.black,
+          color: isDark ? Colors.white : Theme.of(context).colorScheme.onSurface,
         ),
         onPressed: () => Navigator.pop(context),
       ),
@@ -304,7 +305,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: const Color.fromARGB(255, 196, 0, 29),
+          color: AppColors.redDark,
         ),
       ),
       centerTitle: true,
@@ -322,7 +323,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: const Color.fromARGB(255, 196, 0, 29),
+                color: AppColors.redDark,
               ),
             ),
             Text(
@@ -339,7 +340,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
           value: 0.50,
           backgroundColor: isDark ? Colors.white10 : Colors.black12,
           valueColor: const AlwaysStoppedAnimation<Color>(
-            const Color.fromARGB(255, 196, 0, 29),
+            AppColors.redDark,
           ),
           borderRadius: BorderRadius.circular(5),
           minHeight: 6,
@@ -366,7 +367,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: isDark ? Colors.white70 : Colors.black87,
+            color: isDark ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
           ),
         ),
         const SizedBox(height: 8),
@@ -376,7 +377,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
           keyboardType: keyboardType,
           validator: validator,
           style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
+            color: isDark ? Colors.white : Theme.of(context).colorScheme.onSurface,
             fontSize: 15,
           ),
           decoration: InputDecoration(
@@ -403,7 +404,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
                   )
                 : null,
             filled: true,
-            fillColor: isDark ? const Color(0xFF1E1414) : Colors.white,
+            fillColor: isDark ? const Color(0xFF1E1414) : AppColors.lightCard,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide.none,
@@ -420,7 +421,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: const BorderSide(
-                color: const Color.fromARGB(255, 196, 0, 29),
+                color: AppColors.redDark,
                 width: 1.5,
               ),
             ),
@@ -443,7 +444,7 @@ class _BloodBankRegistrationScreenState extends State<BloodBankRegistrationScree
           child: const Text(
             'Log in',
             style: TextStyle(
-              color: const Color.fromARGB(255, 196, 0, 29),
+              color: AppColors.redDark,
               fontWeight: FontWeight.bold,
             ),
           ),

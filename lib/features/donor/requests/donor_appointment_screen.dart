@@ -2,7 +2,7 @@ import 'package:www/core/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/features/donor/requests/donor_confirm_donation_screen.dart';
-
+import 'package:www/core/utiles/ThemeManager.dart';
 import 'package:www/core/models/user.dart';
 
 class BloodBanksScreen extends StatelessWidget {
@@ -10,28 +10,29 @@ class BloodBanksScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return FutureBuilder(
       future: UserService.getUsersByType('bloodBank'),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            backgroundColor: Colors.black,
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (snapshot.hasError) {
           return Scaffold(
-            backgroundColor: Colors.black,
-            body: Center(child: Text("Error: ${snapshot.error}")),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: Center(child: Text("Error: ${snapshot.error}", style: TextStyle(color: cs.onSurface))),
           );
         }
 
         if (!snapshot.hasData || snapshot.data == null) {
-          return const Scaffold(
-            backgroundColor: Colors.black,
-            body: Center(child: Text("No user data")),
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: Center(child: Text("No user data", style: TextStyle(color: cs.onSurface))),
           );
         }
 
@@ -41,12 +42,13 @@ class BloodBanksScreen extends StatelessWidget {
           body: Container(
             width: double.infinity,
             height: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: RadialGradient(
+            decoration: BoxDecoration(
+              color: isDark ? null : Theme.of(context).scaffoldBackgroundColor,
+              gradient: isDark ? const RadialGradient(
                 center: Alignment(0, -0.5),
                 radius: 1.2,
                 colors: [Color(0xFF250A0A), Colors.black],
-              ),
+              ) : null,
             ),
             child: SafeArea(
               child: Column(
@@ -58,13 +60,13 @@ class BloodBanksScreen extends StatelessWidget {
                       children: [
                         IconButton(
                           onPressed: () => Navigator.pop(context),
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.arrow_back_ios_new,
-                            color: Colors.white,
+                            color: cs.onSurface,
                             size: 18,
                           ),
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.05),
+                            backgroundColor: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.05),
                             padding: const EdgeInsets.all(12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -72,10 +74,10 @@ class BloodBanksScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 20),
-                        const Text(
+                        Text(
                           'Blood Banks',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: cs.onSurface,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
@@ -106,13 +108,15 @@ class BloodBanksScreen extends StatelessWidget {
 
   Widget _buildBankCard(BuildContext context, User bank) {
     final status = getAvailabilityStatus(bank.workingHours ?? "");
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,8 +130,8 @@ class BloodBanksScreen extends StatelessWidget {
                   children: [
                     Text(
                       bank.name ?? "",
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: cs.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -136,7 +140,7 @@ class BloodBanksScreen extends StatelessWidget {
                     Text(
                       bank.address ?? "",
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: cs.onSurface.withValues(alpha: 0.5),
                         fontSize: 13,
                       ),
                     ),
@@ -149,13 +153,13 @@ class BloodBanksScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   " 2.1 Km",
-                  style: const TextStyle(
-                    color: Color(0xFFC4001D),
+                  style: TextStyle(
+                    color: AppColors.redDark,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -168,14 +172,14 @@ class BloodBanksScreen extends StatelessWidget {
             children: [
               Icon(
                 Icons.access_time_rounded,
-                color: Colors.white.withOpacity(0.4),
+                color: cs.onSurface.withValues(alpha: 0.4),
                 size: 16,
               ),
               const SizedBox(width: 8),
               Text(
                 bank.workingHours ?? "",
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: cs.onSurface.withValues(alpha: 0.4),
                   fontSize: 12,
                 ),
               ),
@@ -219,7 +223,7 @@ class BloodBanksScreen extends StatelessWidget {
                 Navigator.pushNamed(context, Routes.donorConfirmDonationRoute, arguments: bank);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC4001D),
+                backgroundColor: AppColors.redDark,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),

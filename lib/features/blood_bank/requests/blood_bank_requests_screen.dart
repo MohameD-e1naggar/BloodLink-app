@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/models/blood_request.dart';
 import 'package:www/core/services/firestore_service.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 import 'package:www/core/models/blood_inventory.dart';
 import 'package:www/features/blood_bank/home/blood_bank_home_screen.dart';
+import 'package:www/core/services/emergency_reset_service.dart';
 
 class BloodBankRequestsScreen extends StatefulWidget {
   const BloodBankRequestsScreen({super.key});
@@ -26,7 +28,7 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
       case 'approved':
         return Colors.green;
       case 'rejected':
-        return Colors.red;
+        return AppColors.redDark;
       case 'pending':
         return Colors.blue;
       case 'fulfilled':
@@ -49,46 +51,52 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return FutureBuilder<List<Request>>(
       future: loadRequests(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            backgroundColor: Colors.black,
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (snapshot.hasError) {
           return Scaffold(
-            backgroundColor: Colors.black,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Center(
               child: Text(
                 "Error: ${snapshot.error}",
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: cs.onSurface),
               ),
             ),
           );
         }
 
-        final requests = snapshot.data ?? [];
+        final filteredRequests = snapshot.data ?? [];
+
+
+        final requests = filteredRequests
+            .where((request) => request.units != 0)
+            .toList();
 
         return Scaffold(
-          backgroundColor: const Color(0xFF0F0F0F),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            title: const Text(
+            title: Text(
               "Blood Bank Requests",
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: cs.onSurface),
             ),
-            backgroundColor: Color(0xFF0F0F0F),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 0,
           ),
           body: requests.isEmpty
-              ? const Center(
+              ? Center(
             child: Text(
               "No requests",
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
             ),
           )
               : ListView.builder(
@@ -105,11 +113,13 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
   }
   Widget _buildCard(Request req) {
     final isEmergency = req.urgency == Urgency.critical.name;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
 
     final status = req.reqStatus;
 
     return Card(
-      color: const Color(0xFF1A1A1A),
+      color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
@@ -122,12 +132,12 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
               children: [
                 CircleAvatar(
                   backgroundColor: isEmergency
-                      ? Colors.red.withOpacity(0.2)
-                      : Colors.blue.withOpacity(0.2),
+                      ? AppColors.redDark.withValues(alpha: 0.2)
+                      : Colors.blue.withValues(alpha: 0.2),
                   child: Text(
                     req.bloodType ?? '?',
                     style: TextStyle(
-                      color: isEmergency ? Colors.red : Colors.blue,
+                      color: isEmergency ? AppColors.redDark : Colors.blue,
                     ),
                   ),
                 ),
@@ -137,19 +147,35 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        req.reqSender == ReqSender.hospital.name
-                            ? req.hospitalName ?? ""
-                            : "Donor",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      if (req.reqSender == ReqSender.hospital.name)
+                        Text(
+                          req.hospitalName ?? "",
+                          style: TextStyle(
+                            color: cs.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      else
+                        FutureBuilder<String>(
+                          future: req.donorId != null
+                              ? UserService.getUser(req.donorId!)
+                                  .then((u) => u?.name ?? 'Unknown Donor')
+                              : Future.value('Unknown Donor'),
+                          builder: (context, snap) {
+                            final name = snap.data ?? 'Loading...';
+                            return Text(
+                              name,
+                              style: TextStyle(
+                                color: cs.onSurface,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
-                      ),
                       Text(
-                        "${req.reqSender == ReqSender.hospital.name ? "${req.units} Units •" : ""}  ${req.time ?? ''}",
-                        style: const TextStyle(
-                          color: Colors.grey,
+                        "${req.reqSender == ReqSender.hospital.name ? "${req.units} Units •" : ""}  ${req.time ?? ''} ${req.reqSender == ReqSender.hospital.name ? "" : " • ${req.date}"}",
+                        style: TextStyle(
+                          color: cs.onSurface.withValues(alpha: 0.6),
                           fontSize: 12,
                         ),
                       ),
@@ -159,7 +185,11 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
               ],
             ),
 
-            const Divider(color: Color(0xFF333333)),
+            // ── Countdown badge for approved emergency requests ──────────
+            if (isEmergency && status == RequestStatus.approved.name)
+              _buildCountdownBadge(req.approvedAt),
+
+            Divider(color: isDark ? const Color(0xFF333333) : cs.onSurface.withValues(alpha: 0.1)),
 
             if (status == RequestStatus.pending.name)
               Row(
@@ -168,9 +198,9 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
                     child: OutlinedButton(
                       onPressed: () =>
                           _updateStatus(req, RequestStatus.rejected),
-                      child: const Text(
+                      child: Text(
                         "Reject",
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
                       ),
                     ),
                   ),
@@ -187,7 +217,7 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
                           _updateStatus(req, RequestStatus.approved);
                           },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC4001D),
+                        backgroundColor: AppColors.redDark,
                       ),
                       child: const Text(
                         "Accept",
@@ -205,7 +235,7 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -257,9 +287,9 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
 
                           },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
+                        backgroundColor: cs.onSurface.withValues(alpha: 0.5),
                       ),
-                      child: const Text("Fulfill"),
+                      child: const Text("Fulfill", style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
@@ -282,4 +312,45 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
     );
   }
 
+  Widget _buildCountdownBadge(String? approvedAt) {
+    final remaining = EmergencyResetService.remainingTime(approvedAt);
+    if (remaining == null) return const SizedBox.shrink();
+
+    final label = EmergencyResetService.formatCountdown(remaining);
+    final totalSeconds = remaining.inSeconds;
+    final maxSeconds = const Duration(hours: 6).inSeconds;
+    final fraction = totalSeconds / maxSeconds;
+
+    // Green when >4h, orange between 2–4h, red when <2h
+    final Color badgeColor = fraction > 0.66
+        ? const Color(0xFF43A047)
+        : fraction > 0.33
+            ? Colors.orange
+            : AppColors.redDark;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer_outlined, color: badgeColor, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: badgeColor,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

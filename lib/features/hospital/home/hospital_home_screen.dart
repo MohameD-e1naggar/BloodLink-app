@@ -9,6 +9,7 @@ import 'package:www/core/models/user.dart' as my_user;
 
 import 'package:www/features/hospital/requests/hospital_blood_request_screen.dart';
 import 'package:www/features/hospital/home/hospital_search_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 ValueNotifier<bool> refreshHospitalHome = ValueNotifier(false);
 class HospitalHomeScreen extends StatefulWidget {
@@ -37,30 +38,30 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
           future: UserService.getUser(uid),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                backgroundColor: Colors.black,
-                body: Center(child: CircularProgressIndicator()),
+              return Scaffold(
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                body: const Center(child: CircularProgressIndicator()),
               );
             }
 
             if (snapshot.hasError) {
               return Scaffold(
-                backgroundColor: Colors.black,
-                body: Center(child: Text("Error: ${snapshot.error}")),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                body: Center(child: Text("Error: ${snapshot.error}", style: TextStyle(color: Theme.of(context).colorScheme.onSurface))),
               );
             }
 
             if (!snapshot.hasData || snapshot.data == null) {
-              return const Scaffold(
-                backgroundColor: Colors.black,
-                body: Center(child: Text("No user data")),
+              return Scaffold(
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                body: Center(child: Text("No user data", style: TextStyle(color: Theme.of(context).colorScheme.onSurface))),
               );
             }
             user =  snapshot.data!;
             SharedPreferencesHelper.setUser(user);
 
             return Scaffold(
-              backgroundColor: const Color(0xFF0F0F0F),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               body: SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -89,6 +90,8 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
   }
 
   Widget _buildTopBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -98,13 +101,13 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
+                color: isDark ? const Color(0xFF1E1E1E) : AppColors.lightCard,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF2A2A2A)),
+                border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
               ),
               child: const Icon(
                 Icons.local_hospital,
-                color: Color(0xFFE53935),
+                color: AppColors.redDark,
                 size: 22,
               ),
             ),
@@ -115,14 +118,14 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                 Text(
                   user.name ?? "",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: cs.onSurface,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 Text(
                   'Hospital Unit #${user.id?.substring(3,7) ?? ""}',
-                  style: TextStyle(color: Color(0xFF888888), fontSize: 12),
+                  style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 12),
                 ),
               ],
             ),
@@ -146,13 +149,13 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E),
+                  color: isDark ? const Color(0xFF1E1E1E) : AppColors.lightCard,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF2A2A2A)),
+                  border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.notifications_outlined,
-                  color: Colors.white,
+                  color: cs.onSurface,
                   size: 20,
                 ),
               ),
@@ -163,10 +166,10 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 196, 0, 29),
+                    color: AppColors.redDark,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF0F0F0F),
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       width: 2,
                     ),
                   ),
@@ -180,6 +183,8 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
   }
 
   Widget _buildCreateBloodRequestButton() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -192,19 +197,19 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF2A2A2A)),
+          border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.add_circle_outline, color: Color(0xFFE53935), size: 22),
+          children: [
+            Icon(Icons.add_circle_outline, color: AppColors.redDark, size: 22),
             SizedBox(width: 10),
             Text(
               'Create Blood Request',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
               ),
@@ -216,16 +221,18 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
   }
 
   Widget _buildOverviewSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Overview',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -233,7 +240,7 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 196, 0, 29),
+                color: AppColors.redDark,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(
@@ -263,9 +270,9 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A1A),
+                    color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFF2A2A2A)),
+                    border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     children: [
@@ -273,12 +280,12 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2A1515),
+                          color: isDark ? const Color(0xFF2A1515) : AppColors.lightCard,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.compare_arrows,
-                          color: Color(0xFFE53935),
+                          color: AppColors.redDark,
                           size: 22,
                         ),
                       ),
@@ -286,15 +293,15 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Active Requests',
-                            style: TextStyle(color: Color(0xFF888888), fontSize: 13),
+                            style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 13),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '${stats['active']}',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: cs.onSurface,
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
                             ),
@@ -311,9 +318,10 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                       child: _buildStatCard(
                         icon: Icons.access_time,
                         iconColor: const Color(0xFFFFB300),
-                        iconBg: const Color(0xFF2A2000),
+                        iconBg: isDark ? const Color(0xFF2A2000) : const Color(0xFFFFF8E1),
                         label: 'Pending',
                         value: '${stats['pending']}',
+                        context: context,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -321,9 +329,10 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                       child: _buildStatCard(
                         icon: Icons.verified_outlined,
                         iconColor: const Color(0xFF43A047),
-                        iconBg: const Color(0xFF0A2A0A),
+                        iconBg: isDark ? const Color(0xFF0A2A0A) : const Color(0xFFE8F5E9),
                         label: 'Fulfilled',
                         value: '${stats['fulfilled']}',
+                        context: context,
                       ),
                     ),
                   ],
@@ -370,13 +379,16 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
     required Color iconBg,
     required String label,
     required String value,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF2A2A2A)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,13 +405,13 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
           const SizedBox(height: 12),
           Text(
             label,
-            style: const TextStyle(color: Color(0xFF888888), fontSize: 13),
+            style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 13),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: cs.onSurface,
               fontSize: 26,
               fontWeight: FontWeight.bold,
             ),
@@ -410,6 +422,8 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
   }
 
   Widget _buildSearchButton() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -421,15 +435,15 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF2A2A2A)),
+          border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
             'Search For Blood Units',
             style: TextStyle(
-              color: Colors.white,
+              color: cs.onSurface,
               fontWeight: FontWeight.w600,
               fontSize: 16,
             ),
@@ -440,13 +454,14 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
   }
 
   Widget _buildLiveUpdates() {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'LIVE UPDATES',
           style: TextStyle(
-            color: Color(0xFF888888),
+            color: cs.onSurface.withValues(alpha: 0.6),
             fontWeight: FontWeight.w700,
             fontSize: 12,
             letterSpacing: 1.5,
@@ -463,9 +478,9 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
             final requests = snapshot.data ?? [];
 
             if (requests.isEmpty) {
-              return const Text(
+              return Text(
                 'No request updates yet',
-                style: TextStyle(color: Color(0xFF888888), fontSize: 13),
+                style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 13),
               );
             }
 
@@ -483,6 +498,7 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
                         title: '${req.bloodType} ${req.urgency == 'critical' ? 'Emergency ' : ''}Request $statusText',
                         subtitle: '${req.bloodBankName ?? 'Blood Bank'} • ${req.time ?? 'N/A'}',
                         color: color,
+                        context: context,
                       ),
                       if (index < (requests.length > 3 ? 2 : requests.length - 1))
                         const SizedBox(height: 10),
@@ -520,11 +536,11 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
       case 'approved':
         return const Color(0xFF43A047);
       case 'pending':
-        return const Color.fromARGB(255, 196, 0, 29);
+        return AppColors.redDark;
       case 'fulfilled':
         return const Color(0xFF43A047);
       case 'rejected':
-        return const Color.fromARGB(255, 196, 0, 29);
+        return AppColors.redDark;
       default:
         return Colors.grey;
     }
@@ -549,13 +565,16 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
     required String title,
     required String subtitle,
     required Color color,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2A2A2A)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -573,8 +592,8 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: cs.onSurface,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -582,7 +601,7 @@ class _HospitalHomeScreenState extends State<HospitalHomeScreen> {
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(color: Color(0xFF888888), fontSize: 12),
+                style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 12),
               ),
             ],
           ),

@@ -8,6 +8,7 @@ import 'package:www/core/models/app_notification.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/models/user.dart' as my_user;
+import 'package:www/core/utiles/ThemeManager.dart';
 
 ValueNotifier<bool> refreshHome = ValueNotifier(false);
 class BloodBankHomeScreen extends StatefulWidget {
@@ -40,22 +41,24 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
     String? selectedType;
     final TextEditingController _amountController = TextEditingController();
     bool isAdding = true;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1A1A),
+          backgroundColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.settings_input_component, color: Color(0xFFE53935)),
+              Icon(Icons.settings_input_component, color: AppColors.redDark),
               SizedBox(width: 10),
-              const Text(
+              Text(
                 'Stock Management',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: TextStyle(color: cs.onSurface, fontSize: 18),
               ),
             ],
           ),
@@ -63,9 +66,9 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                dropdownColor: const Color(0xFF2A2A2A),
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('Select Blood Type'),
+                dropdownColor: isDark ? const Color(0xFF2A2A2A) : AppColors.lightCard,
+                style: TextStyle(color: cs.onSurface),
+                decoration: _inputDecoration('Select Blood Type', context),
                 items: _bloodStock.keys
                     .map(
                       (type) =>
@@ -92,19 +95,19 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
               TextField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('Enter Units Amount'),
+                style: TextStyle(color: cs.onSurface),
+                decoration: _inputDecoration('Enter Units Amount', context),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+              child: Text('CANCEL', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6))),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+                backgroundColor: AppColors.redDark,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -161,20 +164,22 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String label) {
+  InputDecoration _inputDecoration(String label, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+      labelStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 14),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+        borderSide: BorderSide(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFE53935)),
+        borderSide: const BorderSide(color: AppColors.redDark),
       ),
       filled: true,
-      fillColor: const Color(0xFF0F0F0F),
+      fillColor: isDark ? const Color(0xFF0F0F0F) : AppColors.lightCard,
     );
   }
 
@@ -193,7 +198,8 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return ValueListenableBuilder<bool>(
       valueListenable: refreshHome,
       builder: (context, value, _) {
@@ -201,23 +207,23 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
           future: loadData(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                backgroundColor: Colors.black,
-                body: Center(child: CircularProgressIndicator()),
+              return Scaffold(
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                body: const Center(child: CircularProgressIndicator()),
               );
             }
 
             if (snapshot.hasError) {
               return Scaffold(
-                backgroundColor: Colors.black,
-                body: Center(child: Text("Error: ${snapshot.error}")),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                body: Center(child: Text("Error: ${snapshot.error}", style: TextStyle(color: cs.onSurface))),
               );
             }
 
             if (!snapshot.hasData || snapshot.data == null) {
-              return const Scaffold(
-                backgroundColor: Colors.black,
-                body: Center(child: Text("No user data")),
+              return Scaffold(
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                body: Center(child: Text("No user data", style: TextStyle(color: cs.onSurface))),
               );
             }
             var inventory = snapshot.data![1] as Inventory;
@@ -228,7 +234,7 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
              SharedPreferencesHelper.setUser(user);
 
             return Scaffold(
-              backgroundColor: const Color(0xFF0F0F0F),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
@@ -236,7 +242,7 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 196, 0, 29),
+                      color: AppColors.redDark,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.water_drop, color: Colors.white, size: 20),
@@ -244,17 +250,17 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                 ),
                 title: Text(
                   user.name ?? '',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: cs.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 actions: [
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.notifications_none_rounded,
-                      color: Colors.white,
+                      color: cs.onSurface,
                     ),
                     onPressed: () {
                       Navigator.pushNamed(
@@ -272,10 +278,10 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Live Inventory',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: cs.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -301,6 +307,7 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                           status: status['label'],
                           color: status['color'],
                           progress: status['progress'],
+                          context: context,
                         );
                       },
                     ),
@@ -310,7 +317,7 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                       child: _buildActionBtn(
                         'MANAGE INVENTORY',
                         Icons.edit_calendar_rounded,
-                        const Color.fromARGB(255, 196, 0, 29),
+                        AppColors.redDark,
                       ),
                     ),
                   ],
@@ -329,13 +336,16 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
     required String status,
     required Color color,
     required double progress,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2A2A2A)),
+        border: Border.all(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,8 +355,8 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
             children: [
               Text(
                 type,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: cs.onSurface,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -371,20 +381,20 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
           const SizedBox(height: 8),
           Text(
             count,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: cs.onSurface,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const Text(
+          Text(
             'Units in stock',
-            style: TextStyle(color: Colors.grey, fontSize: 10),
+            style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 10),
           ),
           const Spacer(),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: const Color(0xFF2A2A2A),
+            backgroundColor: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1),
             color: color,
             minHeight: 4,
           ),
@@ -433,31 +443,32 @@ class NotificationsScreen extends StatelessWidget {
     return 'Just now';
   }
 
-  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
+        iconTheme: IconThemeData(color: cs.onSurface),
+        title: Text(
           'Notifications',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: cs.onSurface),
         ),
       ),
       body: StreamBuilder<List<AppNotification>>(
         stream: NotificationService.streamForReceiver(uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFFE53935)));
+            return Center(child: CircularProgressIndicator(color: AppColors.redDark));
           }
           if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.white)));
+            return Center(child: Text("Error: ${snapshot.error}", style: TextStyle(color: cs.onSurface)));
           }
           final notifications = snapshot.data ?? [];
           if (notifications.isEmpty) {
-            return const Center(child: Text("No notifications yet", style: TextStyle(color: Colors.white70)));
+            return Center(child: Text("No notifications yet", style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7))));
           }
 
           return ListView.builder(
@@ -469,9 +480,9 @@ class NotificationsScreen extends StatelessWidget {
                 margin: const EdgeInsets.fromLTRB(0, 0, 0, 12),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
+                  color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF2A2A2A)),
+                  border: Border.all(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
                 ),
                 child: Row(
                   children: [
@@ -480,7 +491,7 @@ class NotificationsScreen extends StatelessWidget {
                       notif.type == 'request_fulfilled' ? Icons.check_circle :
                       notif.type == 'request_approved' ? Icons.thumb_up :
                       Icons.info_outline,
-                      color: const Color(0xFFE53935)
+                      color: AppColors.redDark
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -489,22 +500,22 @@ class NotificationsScreen extends StatelessWidget {
                         children: [
                           Text(
                             notif.title ?? 'Notification',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: cs.onSurface,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             notif.body ?? '',
-                            style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                            style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 13),
                           ),
                         ],
                       ),
                     ),
                     Text(
                       _formatTimestamp(notif.timestamp),
-                      style: TextStyle(color: Colors.grey[600], fontSize: 10),
+                      style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5), fontSize: 10),
                     ),
                   ],
                 ),

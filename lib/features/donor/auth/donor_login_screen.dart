@@ -7,6 +7,7 @@ import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/features/donor/auth/registration/basic_info_screen.dart';
 import 'package:www/features/donor/donor_wrapper.dart';
 import 'package:www/features/onboarding/role_selection_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class DonorLoginScreen extends StatefulWidget {
   const DonorLoginScreen({super.key});
@@ -23,6 +24,9 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -30,15 +34,12 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
         Navigator.pop(context);
       },
       child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0, -0.5),
-              radius: 1.2,
-              colors: [Color(0xFF250A0A), Colors.black],
-            ),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
           ),
           child: SafeArea(
             child: SingleChildScrollView(
@@ -51,13 +52,13 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, Routes.roleSelectionRoute);
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back_ios_new,
-                      color: Colors.white,
+                      color: cs.onSurface,
                       size: 18,
                     ),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.05),
+                      backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : AppColors.lightCard,
                       padding: const EdgeInsets.all(12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -65,11 +66,11 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 60),
-                  const Center(
+                  Center(
                     child: Text(
                       "Sign In",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: cs.onSurface,
                         fontSize: 34,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1.5,
@@ -81,7 +82,7 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                     child: Text(
                       "Welcome back! Please enter your details.",
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.4),
+                        color: cs.onSurface.withValues(alpha: 0.4),
                         fontSize: 14,
                       ),
                     ),
@@ -112,7 +113,7 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                       child: Text(
                         "Forgot Password?",
                         style: TextStyle(
-                          color: const Color(0xFFE53935).withOpacity(0.8),
+                          color: AppColors.redDark.withValues(alpha: 0.8),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -127,11 +128,11 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFE53935), Color(0xFFB71C1C)],
+                          colors: [AppColors.red, AppColors.redDark],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFE53935).withOpacity(0.2),
+                            color: AppColors.red.withValues(alpha: 0.2),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -175,7 +176,7 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                         Text(
                           "New user? ",
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
+                            color: cs.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                         GestureDetector(
@@ -185,7 +186,7 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                           child: const Text(
                             "Create Account",
                             style: TextStyle(
-                              color: Color(0xFFE53935),
+                              color: AppColors.redDark,
                               fontWeight: FontWeight.bold,
                               decoration: TextDecoration.underline,
                             ),
@@ -266,6 +267,8 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
   }
 
   void _showForgotPasswordDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     final TextEditingController resetEmailController =
         TextEditingController(text: _emailController.text.trim());
     bool isResetting = false;
@@ -275,30 +278,30 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            backgroundColor: const Color(0xFF1A1A1A),
+            backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('Reset Password', style: TextStyle(color: Colors.white)),
+            title: Text('Reset Password', style: TextStyle(color: cs.onSurface)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'Enter your email address to receive a password reset link.',
-                  style: TextStyle(color: Colors.white70),
+                  style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7)),
                 ),
                 const SizedBox(height: 15),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: isDark ? Colors.white.withValues(alpha: 0.05) : AppColors.lightSurface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
                   ),
                   child: TextFormField(
                     controller: resetEmailController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    style: TextStyle(color: cs.onSurface),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                       hintText: "Email address",
-                      hintStyle: TextStyle(color: Colors.white24),
+                      hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.3)),
                       border: InputBorder.none,
                     ),
                   ),
@@ -349,7 +352,7 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                         }
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC4001D),
+                  backgroundColor: AppColors.redDark,
                 ),
                 child: isResetting
                     ? const SizedBox(
@@ -366,12 +369,13 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
     );
   }
   Widget _buildLabel(String text) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: cs.onSurface,
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
@@ -386,27 +390,29 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
     bool isPassword = false,
     String? Function(String?)? validator,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
       ),
       child: TextFormField(
         controller: controller,
         obscureText: isPassword && !_isPasswordVisible,
         validator: validator,
-        style: const TextStyle(color: Colors.white, fontSize: 15),
+        style: TextStyle(color: cs.onSurface, fontSize: 15),
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.symmetric(vertical: 20),
-          prefixIcon: Icon(icon, color: const Color(0xFFE53935), size: 22),
+          prefixIcon: Icon(icon, color: AppColors.redDark, size: 22),
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
                     _isPasswordVisible
                         ? Icons.visibility
                         : Icons.visibility_off,
-                    color: Colors.white38,
+                    color: cs.onSurface.withValues(alpha: 0.4),
                     size: 20,
                   ),
                   onPressed: () =>
@@ -414,7 +420,7 @@ class _DonorLoginScreenState extends State<DonorLoginScreen> {
                 )
               : null,
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),
+          hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.3), fontSize: 14),
           border: InputBorder.none,
         ),
       ),

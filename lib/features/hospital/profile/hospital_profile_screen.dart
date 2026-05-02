@@ -5,6 +5,7 @@ import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/features/hospital/auth/hospital_login_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class profile extends StatefulWidget {
   const profile({super.key});
@@ -36,32 +37,48 @@ class _profileState extends State<profile> {
 
         final user = snapshot.data!;
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final cs = Theme.of(context).colorScheme;
+
         return Scaffold(
-          backgroundColor: const Color(0xFF0F0F0F),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  isDark ? Icons.light_mode : Icons.dark_mode,
+                  color: cs.onSurface,
+                ),
+                onPressed: () {
+                  AppTheme.themeNotifier.value = isDark ? ThemeMode.light : ThemeMode.dark;
+                  SharedPreferencesHelper.setThemeMode(!isDark);
+                },
+              ),
+            ],
+          ),
           body: SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 20),
                 Center(
                   child: Container(
                     width: 140,
                     height: 140,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF2A2A2A), width: 3),
-                      color: const Color(0xFF1A1A1A),
+                      border: Border.all(color: isDark? Color(0xFF2A2A2A) : AppColors.lightBorder, width: 3),
+                      color: isDark? Color(0xFF1A1A1A) : AppColors.lightSurface,
                     ),
-                    child: const Icon(Icons.local_hospital, color: Colors.white24, size: 56),
+                    child: Icon(Icons.local_hospital, color: isDark? Colors.white24 : AppColors.darkSurface, size: 56),
                   ),
                 ),
                 const SizedBox(height: 20),
                  Text(
                   user.name ?? "",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 24),
                 ),
                 const Text(
                   "Healthcare Provider",
@@ -101,17 +118,17 @@ class _profileState extends State<profile> {
                       Navigator.pushReplacementNamed(context, Routes.hospitalLoginRoute);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A1A1A),
+                      backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
                       minimumSize: const Size(double.infinity, 55),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
-                        side: const BorderSide(color: Color(0xFF2A2A2A)),
+                        side: BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
                       ),
                     ),
                     child: const Text(
                       "Logout",
                       style: TextStyle(
-                        color: const Color.fromARGB(255, 196, 0, 29),
+                        color: AppColors.redDark,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -131,12 +148,12 @@ class _profileState extends State<profile> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
         children: [
-          Icon(icon, color: const Color.fromARGB(255, 196, 0, 29), size: 18),
+          Icon(icon, color: AppColors.redDark, size: 18),
           const SizedBox(width: 10),
           Text(
             title,
             style: const TextStyle(
-              color: Color(0xFF555555),
+              color: Colors.grey,
               fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.2,
@@ -148,33 +165,40 @@ class _profileState extends State<profile> {
   }
 
   Widget _buildInfoTile(IconData icon, String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF161616),
+        color: isDark ? const Color(0xFF161616) : AppColors.lightCard,
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.05)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.white24, size: 20),
+          Icon(icon, color: Colors.grey, size: 20),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(color: Color(0xFF555555), fontSize: 12),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
-              ),
-            ],
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: cs.onSurface,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  softWrap: true,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -182,16 +206,17 @@ class _profileState extends State<profile> {
   }
 
   Widget _buildActionTile(IconData icon, String title) {
+    final cs = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 30),
-      leading: Icon(icon, color: Colors.white70, size: 22),
+      leading: Icon(icon, color: Colors.grey, size: 22),
       title: Text(
         title,
-        style: const TextStyle(color: Colors.white, fontSize: 15),
+        style: TextStyle(color: cs.onSurface, fontSize: 15),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         Icons.arrow_forward_ios,
-        color: Colors.white12,
+        color: Colors.grey.withValues(alpha: 0.5),
         size: 14,
       ),
       onTap: () {},

@@ -4,22 +4,23 @@ import 'package:www/features/donor/auth/donor_login_screen.dart';
 import 'package:www/features/hospital/auth/hospital_login_screen.dart';
 
 import 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(0, -0.5),
-            radius: 1.2,
-            colors: [Color(0xFF250A0A), Colors.black],
-          ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(
           child: Padding(
@@ -30,13 +31,13 @@ class RoleSelectionScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back_ios_new,
-                    color: Colors.white,
+                    color: cs.onSurface,
                     size: 18,
                   ),
                   style: IconButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.05),
+                    backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : AppColors.lightCard,
                     padding: const EdgeInsets.all(12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -44,10 +45,10 @@ class RoleSelectionScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 40),
-                const Text(
+                Text(
                   "Welcome to\nBloodLink",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: cs.onSurface,
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1,
@@ -57,7 +58,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 Text(
                   "Please select your role to continue",
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: cs.onSurface.withValues(alpha: 0.6),
                     fontSize: 16,
                   ),
                 ),
@@ -103,26 +104,28 @@ class RoleSelectionScreen extends StatelessWidget {
     required IconData icon,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : AppColors.lightCard,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 196, 0, 29).withOpacity(0.1),
+                color: AppColors.redDark.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
-                color: const Color.fromARGB(255, 196, 0, 29),
+                color: AppColors.redDark,
                 size: 30,
               ),
             ),
@@ -133,8 +136,8 @@ class RoleSelectionScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: cs.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -143,7 +146,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: cs.onSurface.withValues(alpha: 0.5),
                       fontSize: 13,
                     ),
                   ),
@@ -152,7 +155,7 @@ class RoleSelectionScreen extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withOpacity(0.2),
+              color: cs.onSurface.withValues(alpha: 0.2),
               size: 16,
             ),
           ],

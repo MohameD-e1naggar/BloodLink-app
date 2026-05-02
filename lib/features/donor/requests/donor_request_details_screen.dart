@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:www/core/models/blood_request.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class DonationDetailsScreen extends StatefulWidget {
   final Request request;
@@ -61,7 +62,7 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
 
     await RequestService.updateStatus(widget.request.id!, status);
 
-    if (mounted) Navigator.pop(context, true);
+    if (context.mounted) Navigator.pop(context, true);
   }
 
   void _handleAccept(BuildContext context) async {
@@ -87,11 +88,13 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
 
     if (!context.mounted) return;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightSurface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -101,10 +104,10 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
             const Icon(Icons.check_circle,
                 color: Colors.green, size: 60),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Donation Accepted!',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -113,24 +116,24 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey[900],
+                color: isDark ? Colors.grey[900] : AppColors.lightCard,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
                 children: [
                   Text(
                     'Go to ${widget.request.hospitalName}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: cs.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     '📍 123 Blood Center Street, Medical District',
                     style: TextStyle(
-                      color: Colors.grey,
+                      color: cs.onSurface.withValues(alpha: 0.6),
                       fontSize: 13,
                     ),
                   ),
@@ -144,9 +147,9 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                 Navigator.pop(context, true);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC4001D),
+                backgroundColor: AppColors.redDark,
               ),
-              child: const Text("Done"),
+              child: Text("Done", style: TextStyle(color: Colors.white)),
             )
           ],
         ),
@@ -157,11 +160,13 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final status = widget.request.reqStatus ?? "pending";
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Donation Request"),
+        title: Text("Donation Request", style: TextStyle(color: cs.onSurface)),
         backgroundColor: Colors.transparent,
       ),
       body: isLoadingLocalStatus
@@ -202,7 +207,7 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           border: Border.all(color: Colors.green),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -217,7 +222,7 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                             const SizedBox(height: 10),
                             Text(
                               "Please go ahead to ${widget.request.hospitalName ?? 'the hospital'}",
-                              style: const TextStyle(color: Colors.white, fontSize: 16),
+                              style: TextStyle(color: cs.onSurface, fontSize: 16),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 15),
@@ -234,9 +239,9 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey[800],
+                                backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.grey[300],
                               ),
-                              child: const Text("Remove from my feed", style: TextStyle(color: Colors.white)),
+                              child: Text("Remove from my feed", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
                             )
                           ],
                         ),
@@ -245,17 +250,17 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          border: Border.all(color: Colors.red),
+                          color: AppColors.redDark.withValues(alpha: 0.1),
+                          border: Border.all(color: AppColors.redDark),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
                           children: [
-                            const Icon(Icons.cancel, color: Colors.red, size: 40),
+                            const Icon(Icons.cancel, color: AppColors.redDark, size: 40),
                             const SizedBox(height: 10),
                             const Text(
                               "You have rejected this request",
-                              style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: AppColors.redDark, fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 15),
                             ElevatedButton(
@@ -271,9 +276,9 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey[800],
+                                backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.grey[300],
                               ),
-                              child: const Text("Remove from my feed", style: TextStyle(color: Colors.white)),
+                              child: Text("Remove from my feed", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
                             )
                           ],
                         ),
@@ -300,9 +305,9 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                             child: ElevatedButton(
                               onPressed: () => _handleAccept(context),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFC4001D),
+                                backgroundColor: AppColors.redDark,
                               ),
-                              child: const Text("Accept"),
+                              child: const Text("Accept", style: TextStyle(color: Colors.white)),
                             ),
                           ),
                         ],
@@ -315,17 +320,10 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                           "Request Approved",
                           style: TextStyle(color: Colors.green),
                         ),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: () => _updateStatus(
-                            context,
-                            RequestStatus.fulfilled,
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                          ),
-                          child: const Text("Mark as Fulfilled"),
-                        )
+                         Text(
+                          "Please head to the ${widget.request.bloodBankName}",
+                          style: TextStyle(color: Colors.green,fontWeight: FontWeight.bold),
+                        ),
                       ],
                     )
 
@@ -333,17 +331,17 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey[900],
+                        color: isDark ? Colors.grey[900] : AppColors.lightCard,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.info, color: Colors.blue),
-                          SizedBox(width: 10),
+                          const Icon(Icons.info, color: Colors.blue),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               "This is a standard donation request. No action needed.",
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
                             ),
                           ),
                         ],
@@ -353,7 +351,7 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
                   else
                     Text(
                       "Request $status",
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: cs.onSurface),
                     ),
                 ],
               ),
@@ -362,12 +360,12 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
   }
 
   Widget _buildEmergencyCard() {
-    final color = isEmergency ? Colors.red : Colors.blue;
-
+    final color = isEmergency ? AppColors.redDark : Colors.blue;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: isDark ? Colors.grey[900] : AppColors.lightCard,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -390,20 +388,22 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
   }
 
   Widget _buildHospitalCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: isDark ? Colors.grey[900] : AppColors.lightCard,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         children: [
-          const Icon(Icons.local_hospital, color: Colors.white),
+          Icon(Icons.bloodtype, color: cs.onSurface),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              widget.request.hospitalName ?? "Unknown Hospital",
-              style: const TextStyle(color: Colors.white),
+              widget.request.bloodBankName ?? "Unknown BloodBank",
+              style: TextStyle(color: cs.onSurface),
             ),
           )
         ],
@@ -412,17 +412,19 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
   }
 
   Widget _infoCard(String title, String value, {bool expanded = true}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     final card = Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: isDark ? Colors.grey[900] : AppColors.lightCard,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Text(title, style: const TextStyle(color: Colors.grey)),
+          Text(title, style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6))),
           const SizedBox(height: 5),
-          Text(value, style: const TextStyle(color: Colors.white)),
+          Text(value, style: TextStyle(color: cs.onSurface)),
         ],
       ),
     );
@@ -431,18 +433,20 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
   }
 
   Widget _buildQRPass() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: isDark ? Colors.grey[900] : AppColors.lightCard,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
-          const Icon(Icons.qr_code_2, size: 150, color: Colors.white),
+          Icon(Icons.bloodtype_outlined, size: 150, color: cs.onSurface),
           const SizedBox(height: 10),
           const Divider(),
-          _row("Hospital", widget.request.hospitalName ?? ""),
+          _row("Blood Bank", widget.request.bloodBankName ?? ""),
           _row("Blood Type", widget.request.bloodType ?? ""),
           _row("Date", widget.request.date ?? ""),
           _row("Time", widget.request.time ?? ""),
@@ -452,13 +456,14 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
   }
 
   Widget _row(String label, String value) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(color: Colors.white)),
+          Text(label, style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6))),
+          Text(value, style: TextStyle(color: cs.onSurface)),
         ],
       ),
     );

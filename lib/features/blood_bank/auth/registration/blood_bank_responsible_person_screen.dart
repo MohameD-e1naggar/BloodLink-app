@@ -7,6 +7,7 @@ import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/features/blood_bank/blood_bank_wrapper.dart';
 import 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class BloodBankResponsiblePersonScreen extends StatefulWidget {
 
@@ -99,13 +100,15 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF120808),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: cs.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -114,16 +117,16 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 196, 0, 29),
+                color: AppColors.redDark,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.add, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'MedRegistry',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -140,21 +143,21 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'REGISTRATION PROGRESS',
                       style: TextStyle(
-                        color: Colors.white38,
+                        color: cs.onSurface.withValues(alpha: 0.38),
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
+                    const Text(
                       'Step 2 of 2',
                       style: TextStyle(
-                        color: const Color.fromARGB(255, 196, 0, 29),
+                        color: AppColors.redDark,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -164,33 +167,33 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
                 const SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: const LinearProgressIndicator(
+                  child: LinearProgressIndicator(
                     value: 1.0,
                     minHeight: 6,
-                    backgroundColor: Colors.white10,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      const Color.fromARGB(255, 196, 0, 29),
+                    backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.redDark,
                     ),
                   ),
                 ),
                 const SizedBox(height: 32),
 
-                const Text(
+                Text(
                   'Responsible Person',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: cs.onSurface,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Details of the bloodbank administrator',
-                  style: TextStyle(color: Colors.white54, fontSize: 14),
+                  style: TextStyle(color: cs.onSurface.withValues(alpha: 0.54), fontSize: 14),
                 ),
                 const SizedBox(height: 32),
 
-                _buildFieldLabel('Responsible Person Name'),
+                _buildFieldLabel('Responsible Person Name',context),
                 _buildTextField(
                   controller: _adminNameController,
                   hint: 'Enter full name',
@@ -198,7 +201,7 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
                 ),
                 const SizedBox(height: 24),
 
-                _buildFieldLabel('National ID of Responsible Person'),
+                _buildFieldLabel('National ID of Responsible Person',context),
                 _buildTextField(
                   controller: _nationalIdController,
                   hint: 'ID Number (e.g. 123456789)',
@@ -207,16 +210,16 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
                 ),
                 const SizedBox(height: 24),
 
-                _buildFieldLabel('Phone Number of Responsible Person'),
+                _buildFieldLabel('Phone Number of Responsible Person', context),
                 IntlPhoneField(
                   initialCountryCode: 'EG',
-                  dropdownTextStyle: const TextStyle(color: Colors.white),
-                  style: const TextStyle(color: Colors.white),
-                  cursorColor: const Color.fromARGB(255, 196, 0, 29),
+                  dropdownTextStyle: TextStyle(color: cs.onSurface),
+                  style: TextStyle(color: cs.onSurface),
+                  cursorColor: AppColors.redDark,
                   languageCode: "en",
                   onChanged: (phone) =>
                       _adminPhoneNumber = phone.completeNumber,
-                  decoration: _inputDecoration(hint: '(555) 000-0000'),
+                  decoration: _inputDecoration(hint: '(555) 000-0000', context: context),
                 ),
                 const SizedBox(height: 40),
 
@@ -239,7 +242,7 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+                      backgroundColor: AppColors.redDark,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -265,15 +268,15 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.white12),
+                      side: BorderSide(color: isDark ? Colors.white12 : Colors.black12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Back',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: cs.onSurface.withValues(alpha: 0.7),
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -288,13 +291,14 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
     );
   }
 
-  Widget _buildFieldLabel(String label) {
+  Widget _buildFieldLabel(String label, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: Text(
         label,
-        style: const TextStyle(
-          color: Colors.white70,
+        style: TextStyle(
+          color: cs.onSurface.withValues(alpha: 0.7),
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
@@ -308,30 +312,33 @@ class _BloodBankResponsiblePersonScreenState extends State<BloodBankResponsibleP
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
-      decoration: _inputDecoration(hint: hint),
+      style: TextStyle(color: cs.onSurface, fontSize: 15),
+      decoration: _inputDecoration(hint: hint, context: context),
     );
   }
 
-  InputDecoration _inputDecoration({required String hint}) {
+  InputDecoration _inputDecoration({required String hint, required BuildContext context}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),
+      hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.24), fontSize: 14),
       filled: true,
-      fillColor: const Color(0xFF1E1414),
+      fillColor: isDark ? const Color(0xFF1E1414) : AppColors.lightCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide.none,
+        borderSide: isDark ? BorderSide.none : BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
         borderSide: const BorderSide(
-          color: const Color.fromARGB(255, 196, 0, 29),
+          color: AppColors.redDark,
           width: 1.5,
         ),
       ),

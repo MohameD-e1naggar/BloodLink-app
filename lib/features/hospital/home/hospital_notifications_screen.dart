@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:www/core/services/firestore_service.dart';
+import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/app_notification.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class NotificationsScreen extends StatelessWidget {
   final String uid;
@@ -18,21 +20,23 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
       body: StreamBuilder<List<AppNotification>>(
         stream: NotificationService.streamForReceiver(uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFFE53935)));
+            return const Center(child: CircularProgressIndicator(color: AppColors.redDark));
           }
           if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.white)));
+            return Center(child: Text("Error: ${snapshot.error}", style: TextStyle(color: cs.onSurface)));
           }
           final notifications = snapshot.data ?? [];
           if (notifications.isEmpty) {
-            return const Center(child: Text("No notifications yet", style: TextStyle(color: Colors.white70)));
+            return Center(child: Text("No notifications yet", style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7))));
           }
 
           return ListView.builder(
@@ -41,6 +45,7 @@ class NotificationsScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final notif = notifications[index];
               return _buildNotificationItem(
+                context: context,
                 title: notif.title ?? 'Notification',
                 body: notif.body ?? '',
                 time: _formatTimestamp(notif.timestamp),
@@ -49,7 +54,7 @@ class NotificationsScreen extends StatelessWidget {
                       notif.type == 'emergency_approved_hospital' ? Icons.warning_amber_rounded :
                       Icons.info_outline,
                 iconColor: notif.type == 'request_accepted_hospital' ? const Color(0xFF43A047) :
-                           notif.type == 'request_rejected_hospital' ? const Color.fromARGB(255, 196, 0, 29) :
+                           notif.type == 'request_rejected_hospital' ? AppColors.redDark :
                            notif.type == 'emergency_approved_hospital' ? const Color(0xFFFFB300) :
                            const Color(0xFF2196F3),
                 isUnread: !notif.isRead,
@@ -62,39 +67,42 @@ class NotificationsScreen extends StatelessWidget {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return AppBar(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       centerTitle: true,
-      title: const Text(
+      title: Text(
         'Notifications',
         style: TextStyle(
-          color: Colors.white,
+          color: cs.onSurface,
           fontWeight: FontWeight.bold,
           fontSize: 18,
         ),
       ),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Color(0xFFE53935)),
+        icon: const Icon(Icons.arrow_back, color: AppColors.redDark),
         onPressed: () => Navigator.pop(context),
       ),
       actions: [
         TextButton(
           onPressed: () {},
-          child: const Text(
+          child: Text(
             "Clear All",
-            style: TextStyle(color: Color(0xFF888888), fontSize: 13),
+            style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 13),
           ),
         ),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(color: const Color(0xFF2A2A2A), height: 1),
+        child: Container(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1), height: 1),
       ),
     );
   }
 
   Widget _buildNotificationItem({
+    required BuildContext context,
     required String title,
     required String body,
     required String time,
@@ -102,16 +110,18 @@ class NotificationsScreen extends StatelessWidget {
     required Color iconColor,
     required bool isUnread,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isUnread ? const Color(0xFF1A1A1A) : const Color(0xFF141414),
+        color: isUnread ? (isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard) : Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isUnread
-              ? const Color.fromARGB(255, 196, 0, 29).withOpacity(0.3)
-              : const Color(0xFF2A2A2A),
+              ? AppColors.redDark.withOpacity(0.3)
+              : (isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
         ),
       ),
       child: Row(
@@ -135,8 +145,8 @@ class NotificationsScreen extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: cs.onSurface,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -146,7 +156,7 @@ class NotificationsScreen extends StatelessWidget {
                         width: 8,
                         height: 8,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFE53935),
+                          color: AppColors.redDark,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -155,8 +165,8 @@ class NotificationsScreen extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   body,
-                  style: const TextStyle(
-                    color: Color(0xFF888888),
+                  style: TextStyle(
+                    color: cs.onSurface.withValues(alpha: 0.6),
                     fontSize: 13,
                     height: 1.4,
                   ),
@@ -164,8 +174,8 @@ class NotificationsScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   time,
-                  style: const TextStyle(
-                    color: Color(0xFF444444),
+                  style: TextStyle(
+                    color: cs.onSurface.withValues(alpha: 0.4),
                     fontSize: 11,
                   ),
                 ),

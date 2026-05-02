@@ -6,6 +6,7 @@ import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/models/blood_request.dart';
 import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/features/donor/requests/donor_request_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class MakeAppointmentScreen extends StatefulWidget {
   final my_user.User bloodBank;
@@ -69,20 +70,22 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
   }
 
   void _showSuccessDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.check_circle, color: Colors.green, size: 60),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Booked Successfully!',
-              style: TextStyle(color: Colors.white, fontSize: 18),
+              style: TextStyle(color: cs.onSurface, fontSize: 18),
             ),
             const SizedBox(height: 25),
             ElevatedButton(
@@ -91,9 +94,9 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC4001D),
+                backgroundColor: AppColors.redDark,
               ),
-              child: const Text('Done', style: TextStyle(color: Colors.white)),
+              child: Text('Done', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -103,15 +106,17 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: cs.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Confirm Appointment'),
+        title: Text('Confirm Appointment', style: TextStyle(color: cs.onSurface)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -120,14 +125,14 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
           children: [
             Text(
               widget.bloodBank.name ?? "",
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: cs.onSurface,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 30),
-            const Text('Select Date', style: TextStyle(color: Colors.grey)),
+            Text('Select Date', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6))),
             const SizedBox(height: 10),
             InkWell(
               onTap: () async {
@@ -142,7 +147,7 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
               child: Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
+                  color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -150,15 +155,15 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                   children: [
                     Text(
                       DateFormat('d MMMM yyyy').format(selectedDate),
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: cs.onSurface),
                     ),
-                    const Icon(Icons.calendar_month, color: Color(0xFFC4001D)),
+                    const Icon(Icons.calendar_month, color: AppColors.redDark),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 30),
-            const Text('Select Time', style: TextStyle(color: Colors.grey)),
+            Text('Select Time', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6))),
             const SizedBox(height: 15),
             Wrap(
               spacing: 10,
@@ -169,13 +174,13 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                   label: Text(
                     time,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.grey,
+                      color: isSelected ? Colors.white : cs.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   selected: isSelected,
                   onSelected: (val) => setState(() => selectedTime = time),
-                  selectedColor: const Color(0xFFC4001D),
-                  backgroundColor: const Color(0xFF1A1A1A),
+                  selectedColor: AppColors.redDark,
+                  backgroundColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
                 );
               }).toList(),
             ),
@@ -186,7 +191,7 @@ class _MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
               child: ElevatedButton(
                 onPressed: _confirmBooking,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC4001D),
+                  backgroundColor: AppColors.redDark,
                 ),
                 child: const Text(
                   'Confirm Appointment',

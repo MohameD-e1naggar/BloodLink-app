@@ -10,6 +10,7 @@ class SharedPreferencesHelper {
 
   static const String _userKey = 'currentUser';
   static const String _reqsKey = 'userReqs';
+  static const String _themeKey = 'isDarkMode';
 
 
   static Future<void> init() async {
@@ -115,6 +116,23 @@ class SharedPreferencesHelper {
     } catch (e) {
       print('SharedPreferencesHelper.removeKey($key) failed: $e');
       return false;
+    }
+  }
+
+  static Future<void> setThemeMode(bool isDark) async {
+    try {
+      await sharedPreferences.setBool(_themeKey, isDark);
+    } catch (e) {
+      print('SharedPreferencesHelper.setThemeMode() failed: $e');
+    }
+  }
+
+  static bool getThemeMode() {
+    try {
+      return sharedPreferences.getBool(_themeKey) ?? true;
+    } catch (e) {
+      print('SharedPreferencesHelper.getThemeMode() failed: $e');
+      return true;
     }
   }
 

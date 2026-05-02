@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/cache/shared_preferences_helper.dart';
-import 'package:www/features/donor/auth/donor_login_screen.dart';
 import 'package:www/core/models/user.dart' as my_user;
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
    ProfileSettingsScreen({super.key});
@@ -39,22 +39,32 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
             final user = snapshot.data!;
 
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final cs = Theme.of(context).colorScheme;
+
             return Scaffold(
-              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                automaticallyImplyLeading:
-                    false,
-                title: const Text(
+                automaticallyImplyLeading: false,
+                title: Text(
                   'Profile Settings',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 18),
                 ),
                 centerTitle: true,
+                actions: [
+                  IconButton(
+                    icon: Icon(
+                      isDark ? Icons.light_mode : Icons.dark_mode,
+                      color: cs.onSurface,
+                    ),
+                    onPressed: () {
+                      AppTheme.themeNotifier.value = isDark ? ThemeMode.light : ThemeMode.dark;
+                      SharedPreferencesHelper.setThemeMode(!isDark);
+                    },
+                  ),
+                ],
               ),
               body: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -129,17 +139,17 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A1A1A),
+                      backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
                       minimumSize: const Size(double.infinity, 55),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
-                        side: const BorderSide(color: Color(0xFF2A2A2A)),
+                        side: BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
                       ),
                     ),
                     child: const Text(
                       "Logout",
                       style: TextStyle(
-                        color: Color.fromARGB(255, 196, 0, 29),
+                        color: AppColors.redDark,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -152,10 +162,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             );
           }
         );
-      }
-  }
-
-  Widget _buildAvatarSection(String name,String id) {
+      }  Widget _buildAvatarSection(String name,String id) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         Stack(
@@ -166,21 +174,21 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color.fromARGB(255, 196, 0, 29),
+                  color: AppColors.redDark,
                   width: 2,
                 ),
               ),
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 radius: 55,
-                backgroundColor: Color.fromARGB(118, 37, 37, 37),
-                child: Icon(Icons.person, color: Colors.white, size: 50),
+                backgroundColor: isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightSurface,
+                child: Icon(Icons.person, color: isDark ? Colors.white : Colors.grey, size: 50),
               ),
             ),
             Container(
               height: 35,
               width: 35,
               decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 196, 0, 29),
+                color: AppColors.redDark,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -194,15 +202,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         const SizedBox(height: 15),
          Text(
           name,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
         ),
          Text(
           'Donor ID: ${id.substring(0,9)}',
-          style: TextStyle(color: Colors.grey, fontSize: 14),
+          style: const TextStyle(color: Colors.grey, fontSize: 14),
         ),
       ],
     );
@@ -213,7 +217,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       padding: const EdgeInsets.only(bottom: 10, left: 5),
       child: Row(
         children: [
-          Icon(icon, color: const Color.fromARGB(255, 196, 0, 29), size: 18),
+          Icon(icon, color: AppColors.redDark, size: 18),
           const SizedBox(width: 8),
           Text(
             title,
@@ -230,18 +234,21 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   }
 
   Widget _buildInfoCard(List<Widget> children) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(118, 37, 37, 37),
+        color: isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.05)),
       ),
       child: Column(children: children),
     );
   }
 
   Widget _buildInfoTile(String label, String value, {bool isLast = false}) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(15),
       child: Column(
@@ -251,8 +258,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           const SizedBox(height: 5),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: cs.onSurface,
               fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
@@ -263,10 +270,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   }
 
   Widget _buildDivider() {
+    final cs = Theme.of(context).colorScheme;
     return Divider(
-      color: Colors.white.withOpacity(0.05),
+      color: cs.onSurface.withValues(alpha: 0.05),
       height: 1,
       indent: 15,
       endIndent: 15,
     );
   }
+}

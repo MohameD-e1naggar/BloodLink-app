@@ -1,6 +1,7 @@
 import 'package:www/core/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:www/features/donor/auth/registration/review_summary_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class HealthScreeningScreen extends StatefulWidget {
   final String fullName;
@@ -43,14 +44,22 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: const Color.fromARGB(255, 196, 0, 29),
-              onPrimary: Colors.white,
-              surface: Color.fromARGB(255, 0, 0, 0),
-              onSurface: Colors.white,
-            ),
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: AppColors.redDark,
+                    onPrimary: Colors.white,
+                    surface: Color.fromARGB(255, 0, 0, 0),
+                    onSurface: Colors.white,
+                  )
+                : const ColorScheme.light(
+                    primary: AppColors.redDark,
+                    onPrimary: Colors.white,
+                    surface: AppColors.lightSurface,
+                    onSurface: Colors.black,
+                  ),
           ),
           child: child!,
         );
@@ -66,13 +75,15 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          icon: Icon(Icons.arrow_back_ios, color: cs.onSurface, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -87,7 +98,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
                   const Text(
                     'STEP 3 OF 4',
                     style: TextStyle(
-                      color: const Color.fromARGB(255, 196, 0, 29),
+                      color: AppColors.redDark,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
@@ -97,17 +108,17 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       4,
-                      (index) => _buildProgressStep(index <= 2),
+                      (index) => _buildProgressStep(index <= 2, context),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 30),
-            const Text(
+            Text(
               'Health Screening',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -124,6 +135,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
               icon: Icons.add_moderator_outlined,
               value: _hasChronicDiseases,
               onChanged: (val) => setState(() => _hasChronicDiseases = val),
+              context: context,
             ),
             const SizedBox(height: 12),
             _buildHealthQuestion(
@@ -131,6 +143,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
               icon: Icons.medication_outlined,
               value: _takesRegularMedication,
               onChanged: (val) => setState(() => _takesRegularMedication = val),
+              context: context,
             ),
             const SizedBox(height: 12),
             _buildHealthQuestion(
@@ -138,6 +151,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
               icon: Icons.medical_services_outlined,
               value: _hadRecentSurgery,
               onChanged: (val) => setState(() => _hadRecentSurgery = val),
+              context: context,
             ),
             const SizedBox(height: 12),
             _buildHealthQuestion(
@@ -145,6 +159,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
               icon: Icons.bloodtype_outlined,
               value: _hasAnemia,
               onChanged: (val) => setState(() => _hasAnemia = val),
+              context: context,
             ),
 
             const SizedBox(height: 40),
@@ -161,10 +176,10 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
               controller: _lastDonationController,
               readOnly: true,
               onTap: () => _selectDate(context),
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: cs.onSurface),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color.fromARGB(118, 37, 37, 37),
+                fillColor: isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightCard,
                 hintText: 'mm/dd/yyyy',
                 hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                 suffixIcon: const Icon(
@@ -174,7 +189,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderSide: isDark ? BorderSide.none : BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
                 ),
               ),
             ),
@@ -198,7 +213,7 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
                   Navigator.pushNamed(context, Routes.donorRegisterReviewRoute, arguments: {'fullName': widget.fullName, 'pass': widget.pass, 'email': widget.email, 'phone': widget.phone, 'dob': widget.dob, 'gender': widget.gender, 'bloodType': widget.bloodType, 'weight': widget.weight, 'hasChronicDiseases': _hasChronicDiseases, 'takesMedication': _takesRegularMedication, 'hadSurgery': _hadRecentSurgery, 'hasAnemia': _hasAnemia, 'lastDonation': _lastDonationController.text});
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+                  backgroundColor: AppColors.redDark,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -226,18 +241,21 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
     required IconData icon,
     required bool value,
     required ValueChanged<bool> onChanged,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1414),
+            color: isDark ? const Color(0xFF1E1414) : AppColors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             icon,
-            color: const Color.fromARGB(255, 196, 0, 29),
+            color: AppColors.redDark,
             size: 22,
           ),
         ),
@@ -245,8 +263,8 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: cs.onSurface,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -255,23 +273,24 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeTrackColor: const Color.fromARGB(255, 196, 0, 29),
+          activeTrackColor: AppColors.redDark,
           inactiveThumbColor: Colors.white,
-          inactiveTrackColor: Color(0xFF9E9E9E).withValues(alpha: 0.3),
+          inactiveTrackColor: const Color(0xFF9E9E9E).withValues(alpha: 0.3),
         ),
       ],
     );
   }
 
-  Widget _buildProgressStep(bool isActive) {
+  Widget _buildProgressStep(bool isActive, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       height: 4,
       width: 40,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: isActive
-            ? const Color.fromARGB(255, 196, 0, 29)
-            : Colors.white.withValues(alpha: 0.1),
+            ? AppColors.redDark
+            : cs.onSurface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(2),
       ),
     );

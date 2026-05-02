@@ -10,13 +10,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'BloodLink',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      darkTheme: AppTheme.dark,
-      initialRoute: Routes.welcomeRoute,
-      onGenerateRoute: RouteGenerator.getRoute,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: AppTheme.themeNotifier,
+      builder: (context, currentMode, _) {
+        return MaterialApp(
+          title: 'BloodLink',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: currentMode,
+          initialRoute: Routes.welcomeRoute,
+          onGenerateRoute: RouteGenerator.getRoute,
+        );
+      },
     );
   }
 }

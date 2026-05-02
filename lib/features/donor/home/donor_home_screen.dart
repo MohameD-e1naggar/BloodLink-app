@@ -5,9 +5,9 @@ import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/models/blood_request.dart';
 import 'package:www/features/donor/requests/donor_appointment_screen.dart';
-import 'package:www/features/donor/requests/donor_request_details_screen.dart';
 import 'package:www/features/donor/auth/donor_login_screen.dart';
 import 'package:www/core/models/user.dart' as my_user;
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class DonorHomeScreen extends StatefulWidget {
   const DonorHomeScreen({super.key});
@@ -25,15 +25,17 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
   }
 
   Future<void> _showLogoutDialog(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF250A0A),
+        backgroundColor: isDark ? const Color(0xFF250A0A) : AppColors.lightSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Logout', style: TextStyle(color: Colors.white)),
+        title: Text('Logout', style: TextStyle(color: cs.onSurface)),
         content: Text(
           'Are you sure you want to log out?',
-          style: TextStyle(color: Colors.white.withOpacity(0.6)),
+          style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
         ),
         actions: [
           TextButton(
@@ -48,7 +50,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
             child: const Text(
               'Yes, Logout',
               style: TextStyle(
-                color: Color(0xFFE53935),
+                color: AppColors.redDark,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -92,6 +94,8 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -103,23 +107,23 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
         builder: (context, snapshot) {
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              backgroundColor: Colors.black,
-              body: Center(child: CircularProgressIndicator()),
+            return Scaffold(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              body: const Center(child: CircularProgressIndicator()),
             );
           }
 
           if (snapshot.hasError) {
             return Scaffold(
-              backgroundColor: Colors.black,
-              body: Center(child: Text("Error: ${snapshot.error}")),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              body: Center(child: Text("Error: ${snapshot.error}", style: TextStyle(color: cs.onSurface))),
             );
           }
 
           if (!snapshot.hasData || snapshot.data == null) {
-            return const Scaffold(
-              backgroundColor: Colors.black,
-              body: Center(child: Text("No user data")),
+            return Scaffold(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              body: Center(child: Text("No user data", style: TextStyle(color: cs.onSurface))),
             );
           }
           var requests = snapshot.data![1] as List<Request>;
@@ -140,15 +144,22 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
           Map<String, int> status = countPendingRequests(requests);
 
           return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Container(
               width: double.infinity,
               height: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment(0, -0.5),
-                  radius: 1.2,
-                  colors: [Color(0xFF250A0A), Colors.black],
-                ),
+              decoration: BoxDecoration(
+                gradient: isDark
+                    ? const RadialGradient(
+                        center: Alignment(0, -0.5),
+                        radius: 1.2,
+                        colors: [Color(0xFF250A0A), Colors.black],
+                      )
+                    : RadialGradient(
+                        center: Alignment(0, -0.5),
+                        radius: 1.2,
+                        colors: [AppColors.lightCard, AppColors.lightSurface],
+                      ),
               ),
               child: SafeArea(
                 child: SingleChildScrollView(
@@ -157,15 +168,15 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildAppBar(user.name ?? "",filteredRequests.length),
+                      _buildAppBar(user.name ?? "",filteredRequests.length, context),
                       const SizedBox(height: 10),
-                      _buildStatsSection(status),
+                      _buildStatsSection(status, context),
                       const SizedBox(height: 20),
                       _buildDonateToBanksButton(context),
                       const SizedBox(height: 25),
-                      _buildSectionHeader('Urgent Requests'),
+                      _buildSectionHeader('Urgent Requests', context),
                       const SizedBox(height: 15),
-                      _buildUrgentRequestsGrid(criticalRequests),
+                      _buildUrgentRequestsGrid(criticalRequests, context),
                       const SizedBox(height: 30),
                     ],
                   ),
@@ -178,7 +189,9 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
     );
   }
 
-  Widget _buildAppBar(String name,int reqNum) {
+  Widget _buildAppBar(String name, int reqNum, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -187,7 +200,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
            Text(
             name,
             style: TextStyle(
-              color: Colors.white,
+              color: cs.onSurface,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -198,13 +211,13 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightCard,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(color: cs.onSurface.withOpacity(0.1)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.notifications_none,
-                  color: Colors.white,
+                  color: cs.onSurface,
                   size: 24,
                 ),
               ),
@@ -216,9 +229,9 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
                     height: 10,
                     width: 10,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE53935),
+                      color: AppColors.redDark,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 1.5),
+                      border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 1.5),
                     ),
                   ),
                 ),
@@ -229,7 +242,9 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
     );
   }
 
-  Widget _buildStatsSection(Map<String,int> status) {
+  Widget _buildStatsSection(Map<String,int> status, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
 
     return Column(
       children: [
@@ -237,9 +252,9 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightCard,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: cs.onSurface.withOpacity(0.1)),
           ),
           child: Column(
             children: [
@@ -251,7 +266,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
               Text(
                 status['approved'].toString(),
                 style: const TextStyle(
-                  color: Color(0xFFE53935),
+                  color: AppColors.redDark,
                   fontSize: 42,
                   fontWeight: FontWeight.bold,
                 ),
@@ -266,9 +281,10 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
               child: _buildSmallStatCard(
                 icon: Icons.access_time,
                 iconColor: const Color(0xFFFFB300),
-                iconBg: const Color(0xFF2A2000),
+                iconBg: isDark ? const Color(0xFF2A2000) : const Color(0xFFFFF8E1),
                 label: 'Pending',
                 value: status['pending'].toString(),
+                context: context,
               ),
             ),
             const SizedBox(width: 12),
@@ -276,9 +292,10 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
               child: _buildSmallStatCard(
                 icon: Icons.verified_outlined,
                 iconColor: const Color(0xFF43A047),
-                iconBg: const Color(0xFF0A2A0A),
+                iconBg: isDark ? const Color(0xFF0A2A0A) : const Color(0xFFE8F5E9),
                 label: 'Fulfilled',
                 value: status['fulfilled'].toString(),
+                context: context,
               ),
             ),
           ],
@@ -293,13 +310,16 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
     required Color iconBg,
     required String label,
     required String value,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: cs.onSurface.withOpacity(0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,8 +341,8 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: cs.onSurface,
               fontSize: 26,
               fontWeight: FontWeight.bold,
             ),
@@ -339,11 +359,11 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
         gradient: const LinearGradient(
-          colors: [Color(0xFFE53935), Color(0xFFB71C1C)],
+          colors: [AppColors.redDark, Color(0xFFB71C1C)],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFE53935).withOpacity(0.2),
+            color: AppColors.redDark.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -379,14 +399,15 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: cs.onSurface,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
@@ -396,7 +417,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
           child: const Text(
             'LIVE UPDATES',
             style: TextStyle(
-              color: Color(0xFFE53935),
+              color: AppColors.redDark,
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -406,7 +427,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
     );
   }
 
-  Widget _buildUrgentRequestsGrid(List<Request> urgentRequests) {
+  Widget _buildUrgentRequestsGrid(List<Request> urgentRequests, BuildContext context) {
     if (urgentRequests.isEmpty) {
       return Center(
         child: Padding(
@@ -440,17 +461,19 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
       ),
       itemCount: urgentRequests.length,
       itemBuilder: (context, index) =>
-          _buildRequestCard(urgentRequests[index], index),
+          _buildRequestCard(urgentRequests[index], index, context),
     );
   }
 
-  Widget _buildRequestCard(Request request, int index) {
+  Widget _buildRequestCard(Request request, int index, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: cs.onSurface.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,7 +485,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
               Text(
                 request.bloodType ?? "",
                 style: TextStyle(
-                  color: null,
+                  color: AppColors.redDark,
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
@@ -476,7 +499,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
                 child: Text(
                   request.urgency ?? "",
                   style: TextStyle(
-                    color: null,
+                    color: AppColors.redDark,
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
@@ -487,7 +510,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
           Text(
             '${request.units}\n${request.hospitalName}',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: cs.onSurface.withValues(alpha: 0.5),
               fontSize: 11,
               height: 1.4,
             ),
@@ -501,7 +524,8 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
                 if (mounted) setState(() {});
               },
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.transparent),
+                side: const BorderSide(color: Colors.transparent),
+                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : AppColors.lightSurface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -509,7 +533,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
               child: Text(
                 'Donate Now',
                 style: TextStyle(
-                  color: null,
+                  color: AppColors.redDark,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),

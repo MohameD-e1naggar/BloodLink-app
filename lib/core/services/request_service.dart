@@ -70,11 +70,24 @@ class RequestService {
 
   static Future<void> updateStatus(String requestId, RequestStatus newStatus) async {
     final col = collection();
-    await col.doc(requestId).update({'reqStatus': newStatus.name});
 
+    // Build the base update map
+    final Map<String, dynamic> updateData = {'reqStatus': newStatus.name};
+
+    // Fetch the request first to check urgency
     final doc = await col.doc(requestId).get();
     if (!doc.exists) return;
     final req = doc.data()!;
+
+    if (newStatus == RequestStatus.approved && req.urgency == Urgency.critical.name) {
+      // Start the 6-hour countdown
+      updateData['approvedAt'] = DateTime.now().toIso8601String();
+    } else if (newStatus == RequestStatus.fulfilled || newStatus == RequestStatus.rejected) {
+      // Clear the countdown
+      updateData['approvedAt'] = null;
+    }
+
+    await col.doc(requestId).update(updateData);
 
     if (req.bloodBankId != null && req.bloodBankId!.isNotEmpty) {
       if (newStatus == RequestStatus.approved) {
@@ -153,13 +166,16 @@ class RequestService {
       int currentUnits = req.units ?? 0;
       if (currentUnits > 0) {
         currentUnits -= 1;
-        transaction.update(docRef, {
-          'units': currentUnits,
-          if (currentUnits == 0) 'reqStatus': RequestStatus.approved.name,
-        });
         if (currentUnits == 0) {
           justApproved = true;
           reqData = req;
+          transaction.update(docRef, {
+            'units': currentUnits,
+            'reqStatus': RequestStatus.approved.name,
+            'approvedAt': DateTime.now().toIso8601String(),
+          });
+        } else {
+          transaction.update(docRef, {'units': currentUnits});
         }
       }
     });

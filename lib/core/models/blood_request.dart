@@ -32,6 +32,7 @@ class Request {
   final String? urgency;
   final String? id ;
   final int? donorsAcceptedCriticalReqNum;
+  final String? approvedAt; // ISO 8601 — set when critical request is approved
 
   Request( {
     this.donorId,
@@ -48,6 +49,7 @@ class Request {
     this.reqSender,
     this.id,
     this.donorsAcceptedCriticalReqNum,
+    this.approvedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -65,6 +67,7 @@ class Request {
       'reqSender': reqSender,
       'hospitalName': hospitalName,
       'donorsAcceptedCriticalReqNum':donorsAcceptedCriticalReqNum,
+      'approvedAt': approvedAt,
     };
   }
 
@@ -84,6 +87,7 @@ class Request {
       reqSender: map['reqSender'],
       hospitalName: map['hospitalName'],
       donorsAcceptedCriticalReqNum: map['donorsAcceptedCriticalReqNum'],
+      approvedAt: map['approvedAt'],
     );
   }
 
@@ -101,6 +105,7 @@ class Request {
     String? reqSender,
     String? hospitalName,
     int? donorsAcceptedCriticalReqNum,
+    String? approvedAt,
   }) {
     return Request(
       donorId: donorId ?? this.donorId,
@@ -116,6 +121,7 @@ class Request {
       reqSender: reqSender ?? this.reqSender,
       hospitalName: hospitalName ?? this.hospitalName,
       donorsAcceptedCriticalReqNum : donorsAcceptedCriticalReqNum ?? this.donorsAcceptedCriticalReqNum,
+      approvedAt: approvedAt ?? this.approvedAt,
     );
   }
 }

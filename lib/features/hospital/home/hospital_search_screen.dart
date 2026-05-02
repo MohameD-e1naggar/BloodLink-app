@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/core/models/blood_inventory.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class HospitalSearchScreen extends StatefulWidget {
   const HospitalSearchScreen({super.key});
@@ -92,7 +93,7 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -104,13 +105,14 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final cs = Theme.of(context).colorScheme;
     return AppBar(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
-      title: const Text(
+      title: Text(
         'Blood Availability',
         style: TextStyle(
-          color: Colors.white,
+          color: cs.onSurface,
           fontWeight: FontWeight.bold,
           fontSize: 18,
         ),
@@ -134,13 +136,15 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
   }
 
   Widget _buildTabItem(String label, bool isActive) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Expanded(
       child: Column(
         children: [
           Text(
             label,
             style: TextStyle(
-              color: isActive ? Colors.white : const Color(0xFF555555),
+              color: isActive ? cs.onSurface : cs.onSurface.withValues(alpha: 0.5),
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               fontSize: 13,
             ),
@@ -149,8 +153,8 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
           Container(
             height: 3,
             color: isActive
-                ? const Color.fromARGB(255, 196, 0, 29)
-                : const Color(0xFF2A2A2A),
+                ? AppColors.redDark
+                : (isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
           ),
         ],
       ),
@@ -158,18 +162,20 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
   }
 
   Widget _buildFilterSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
-      color: const Color(0xFF141414),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               "SELECT BLOOD TYPE",
               style: TextStyle(
-                color: Color(0xFF888888),
+                color: cs.onSurface.withValues(alpha: 0.6),
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
@@ -194,20 +200,20 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
                     width: 55,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color.fromARGB(255, 196, 0, 29)
-                          : const Color(0xFF1F1F1F),
+                          ? AppColors.redDark
+                          : (isDark ? const Color(0xFF1F1F1F) : AppColors.lightCard),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isSelected
                             ? Colors.transparent
-                            : const Color(0xFF2A2A2A),
+                            : (isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
                       ),
                     ),
                     child: Center(
                       child: Text(
                         _bloodTypes[index],
                         style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.white60,
+                          color: isSelected ? Colors.white : cs.onSurface.withValues(alpha: 0.6),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -223,14 +229,14 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Search Radius",
-                  style: TextStyle(color: Colors.white, fontSize: 14),
+                  style: TextStyle(color: cs.onSurface, fontSize: 14),
                 ),
                 Text(
                   "${_distanceRange.toInt()} km",
                   style: const TextStyle(
-                    color: Color(0xFFE53935),
+                    color: AppColors.redDark,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -239,15 +245,10 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
           ),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: const Color.fromARGB(255, 196, 0, 29),
-              inactiveTrackColor: const Color(0xFF2A2A2A),
-              thumbColor: Colors.white,
-              overlayColor: const Color.fromARGB(
-                255,
-                196,
-                0,
-                29,
-              ).withOpacity(0.2),
+              activeTrackColor: AppColors.redDark,
+              inactiveTrackColor: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1),
+              thumbColor: cs.onSurface,
+              overlayColor: AppColors.redDark.withOpacity(0.2),
             ),
             child: Slider(
               value: _distanceRange,
@@ -262,6 +263,7 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
   }
 
   Widget _buildResultsList() {
+    final cs = Theme.of(context).colorScheme;
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _loadBloodBanks(),
       builder: (context, snapshot) {
@@ -273,7 +275,7 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
           return Center(
             child: Text(
               'Error: ${snapshot.error}',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: cs.onSurface),
             ),
           );
         }
@@ -281,10 +283,10 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
         final locations = snapshot.data ?? [];
 
         if (locations.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
               'No blood banks found',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
             ),
           );
         }
@@ -303,21 +305,23 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
 
   Widget _buildLocationCard(Map<String, dynamic> item) {
     Color statusColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
 
     if (item['status'] == 'high') {
       statusColor = const Color(0xFF43A047);
     } else if (item['status'] == 'medium') {
       statusColor = Colors.orange;
     } else {
-      statusColor = const Color.fromARGB(255, 196, 0, 29);
+      statusColor = AppColors.redDark;
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2A2A2A)),
+        border: Border.all(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
       ),
       child: Column(
         children: [
@@ -325,8 +329,8 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
             contentPadding: const EdgeInsets.all(16),
             title: Text(
               item['name'],
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: cs.onSurface,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -337,16 +341,16 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
                 const SizedBox(height: 4),
                 Text(
                   item['address'] ?? 'N/A',
-                  style: const TextStyle(
-                    color: Color(0xFF666666),
+                  style: TextStyle(
+                    color: cs.onSurface.withValues(alpha: 0.6),
                     fontSize: 13,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   item['workingHours'] ?? 'N/A',
-                  style: const TextStyle(
-                    color: Color(0xFF666666),
+                  style: TextStyle(
+                    color: cs.onSurface.withValues(alpha: 0.6),
                     fontSize: 12,
                   ),
                 ),
@@ -375,7 +379,7 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
               ],
             ),
           ),
-          const Divider(height: 1, color: Color(0xFF2A2A2A)),
+          Divider(height: 1, color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
@@ -383,18 +387,18 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
                 Expanded(
                   child: TextButton.icon(
                     onPressed: () {},
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.directions_outlined,
                       size: 16,
-                      color: Color(0xFF888888),
+                      color: cs.onSurface.withValues(alpha: 0.6),
                     ),
-                    label: const Text(
+                    label: Text(
                       "Directions",
-                      style: TextStyle(color: Color(0xFF888888), fontSize: 12),
+                      style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 12),
                     ),
                   ),
                 ),
-                Container(width: 1, height: 20, color: const Color(0xFF2A2A2A)),
+                Container(width: 1, height: 20, color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
                 Expanded(
                   child: TextButton.icon(
                     onPressed: () {},

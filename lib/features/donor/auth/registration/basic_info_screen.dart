@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 import 'package:www/features/donor/auth/registration/personal_info_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class BasicInfoScreen extends StatefulWidget {
   const BasicInfoScreen({super.key});
@@ -55,8 +56,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+        content: Text(message, style: TextStyle(color: Colors.white)),
+        backgroundColor: AppColors.redDark,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -65,13 +66,16 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: cs.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -86,7 +90,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   const Text(
                     'STEP 1 OF 4',
                     style: TextStyle(
-                      color: const Color.fromARGB(255, 196, 0, 29),
+                      color: AppColors.redDark,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
@@ -96,17 +100,17 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       4,
-                      (index) => _buildProgressStep(index == 0),
+                      (index) => _buildProgressStep(index == 0, context),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 30),
-            const Text(
+            Text(
               'Basic Info',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
@@ -151,7 +155,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                 });
               },
               initialCountryCode: 'EG',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: cs.onSurface),
               dropdownTextStyle: const TextStyle(color: Colors.grey),
               dropdownIcon: const Icon(
                 Icons.arrow_drop_down,
@@ -159,12 +163,12 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color.fromARGB(118, 37, 37, 37),
+                fillColor: isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightCard,
                 hintText: 'Phone Number',
                 hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderSide: isDark ? BorderSide.none : BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
                 ),
                 counterStyle: const TextStyle(color: Colors.grey),
               ),
@@ -210,7 +214,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               child: ElevatedButton(
                 onPressed: _validateAndNext,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+                  backgroundColor: AppColors.redDark,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -250,6 +254,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -267,10 +273,10 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
           keyboardType: keyboardType,
           validator: validator,
           obscureText: isPassword && !isVisible,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: cs.onSurface),
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color.fromARGB(118, 37, 37, 37),
+            fillColor: isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightCard,
             hintText: hint,
             hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
             prefixIcon: Icon(icon, color: Colors.grey, size: 20),
@@ -286,7 +292,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                 : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: isDark ? BorderSide.none : BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
             ),
             contentPadding: const EdgeInsets.symmetric(vertical: 18),
           ),
@@ -295,15 +301,16 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     );
   }
 
-  Widget _buildProgressStep(bool isActive) {
+  Widget _buildProgressStep(bool isActive, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       height: 4,
       width: 40,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: isActive
-            ? const Color.fromARGB(255, 196, 0, 29)
-            : Colors.white.withValues(alpha: 0.1),
+            ? AppColors.redDark
+            : cs.onSurface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(2),
       ),
     );

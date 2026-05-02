@@ -24,6 +24,7 @@ import 'package:www/features/hospital/auth/registration/hospital_responsible_per
 
 import 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart';
 import 'package:www/features/blood_bank/blood_bank_wrapper.dart';
+import 'package:www/features/blood_bank/home/blood_bank_notifications_screen.dart';
 import 'package:www/features/blood_bank/auth/registration/blood_bank_registration_screen.dart';
 import 'package:www/features/blood_bank/auth/registration/blood_bank_responsible_person_screen.dart';
 
@@ -164,6 +165,9 @@ class RouteGenerator {
           address: args['address'],
           workingHours: args['workingHours'],
         ));
+
+      case Routes.bloodBankNotificationsRoute:
+        return _build((_) => const BloodBankNotifications());
 
       default:
         return _errorRoute(settings.name);

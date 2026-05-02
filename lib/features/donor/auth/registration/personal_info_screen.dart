@@ -1,6 +1,7 @@
 import 'package:www/core/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:www/features/donor/auth/registration/health_screening_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
   final String fullName;
@@ -44,14 +45,22 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: const Color.fromARGB(255, 196, 0, 29),
-              onPrimary: Colors.white,
-              surface: Color.fromARGB(255, 37, 37, 37),
-              onSurface: Colors.white,
-            ),
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: AppColors.redDark,
+                    onPrimary: Colors.white,
+                    surface: Color.fromARGB(255, 37, 37, 37),
+                    onSurface: Colors.white,
+                  )
+                : const ColorScheme.light(
+                    primary: AppColors.redDark,
+                    onPrimary: Colors.white,
+                    surface: AppColors.lightSurface,
+                    onSurface: Colors.black,
+                  ),
           ),
           child: child!,
         );
@@ -66,13 +75,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(0, 0, 0, 0),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          icon: Icon(Icons.arrow_back_ios, color: cs.onSurface, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -87,7 +98,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   const Text(
                     'STEP 2 OF 4',
                     style: TextStyle(
-                      color: const Color.fromARGB(255, 196, 0, 29),
+                      color: AppColors.redDark,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
@@ -97,17 +108,17 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       4,
-                      (index) => _buildProgressStep(index <= 1),
+                      (index) => _buildProgressStep(index <= 1, context),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 30),
-            const Text(
+            Text(
               'Personal Info',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -123,17 +134,18 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               controller: _dobController,
               readOnly: true,
               onTap: () => _selectDate(context),
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: cs.onSurface),
               decoration: _inputDecoration(
                 hint: '06/15/1995',
                 icon: Icons.calendar_today_outlined,
+                context: context,
               ),
             ),
             const SizedBox(height: 20),
 
             _buildLabel('GENDER'),
             DropdownButtonFormField<String>(
-              dropdownColor: const Color.fromARGB(255, 37, 37, 37),
+              dropdownColor: isDark ? const Color.fromARGB(255, 37, 37, 37) : AppColors.lightCard,
 
               icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
               items: ['Male', 'Female'].map((String value) {
@@ -141,12 +153,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   value: value,
                   child: Text(
                     value,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: cs.onSurface),
                   ),
                 );
               }).toList(),
               onChanged: (val) => setState(() => _selectedGender = val),
-              decoration: _inputDecoration(hint: 'Select Gender'),
+              decoration: _inputDecoration(hint: 'Select Gender', context: context),
             ),
             const SizedBox(height: 20),
 
@@ -154,8 +166,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             TextField(
               controller: _weightController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration(hint: 'e.g. 70', suffix: 'kg'),
+              style: TextStyle(color: cs.onSurface),
+              decoration: _inputDecoration(hint: 'e.g. 70', suffix: 'kg', context: context),
             ),
             const SizedBox(height: 30),
 
@@ -178,15 +190,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color.fromARGB(255, 196, 0, 29)
-                          : const Color.fromARGB(118, 37, 37, 37),
+                          ? AppColors.redDark
+                          : (isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightCard),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       _bloodTypes[index],
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : cs.onSurface,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -203,15 +215,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(118, 37, 37, 37),
+                      backgroundColor: isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightCard,
                       minimumSize: const Size(0, 55),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Back',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: cs.onSurface),
                     ),
                   ),
                 ),
@@ -232,7 +244,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       Navigator.pushNamed(context, Routes.donorRegisterHealthRoute, arguments: {'fullName': widget.fullName, 'email': widget.email, 'phone': widget.phone, 'pass': widget.pass, 'dob': _dobController.text, 'gender': _selectedGender!, 'bloodType': _selectedBloodType!, 'weight': _weightController.text});
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+                      backgroundColor: AppColors.redDark,
                       minimumSize: const Size(0, 55),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -284,10 +296,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     required String hint,
     IconData? icon,
     String? suffix,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       filled: true,
-      fillColor: const Color.fromARGB(118, 37, 37, 37),
+      fillColor: isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightCard,
       hintText: hint,
       hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
       prefixIcon: icon != null
@@ -297,21 +312,22 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       suffixStyle: const TextStyle(color: Colors.grey, fontSize: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderSide: isDark ? BorderSide.none : BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
     );
   }
 
-  Widget _buildProgressStep(bool isActive) {
+  Widget _buildProgressStep(bool isActive, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       height: 4,
       width: 40,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: isActive
-            ? const Color.fromARGB(255, 196, 0, 29)
-            : Colors.white.withValues(alpha: 0.1),
+            ? AppColors.redDark
+            : cs.onSurface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(2),
       ),
     );

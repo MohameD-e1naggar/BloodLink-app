@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/user.dart' as my_user;
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class ReviewSummaryScreen extends StatefulWidget {
   final String fullName;
@@ -45,22 +46,24 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Review Summary',
           style: TextStyle(
-            color: Colors.white,
+            color: cs.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          icon: Icon(Icons.arrow_back_ios, color: cs.onSurface, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -76,7 +79,7 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
                   const Text(
                     'STEP 4 OF 4',
                     style: TextStyle(
-                      color: const Color.fromARGB(255, 196, 0, 29),
+                      color: AppColors.redDark,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.1,
                     ),
@@ -86,17 +89,17 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       4,
-                      (index) => _buildProgressStep(true),
+                      (index) => _buildProgressStep(true, context),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 30),
-            const Text(
+            Text(
               'Confirm Your Details',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
@@ -109,37 +112,39 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
 
             _buildSectionTitle('BASIC ACCOUNT'),
             _buildDataCard([
-              _buildDataRow('Full Name', widget.fullName),
-              _buildDataRow('Email', widget.email),
-              _buildDataRow('Phone', widget.phone),
-            ]),
+              _buildDataRow('Full Name', widget.fullName, context),
+              _buildDataRow('Email', widget.email, context),
+              _buildDataRow('Phone', widget.phone, context),
+            ], context),
 
             const SizedBox(height: 25),
 
             _buildSectionTitle('PERSONAL DETAILS'),
             _buildDataCard([
-              _buildDataRow('Date of Birth', widget.dob),
-              _buildDataRow('Gender', widget.gender),
-              _buildDataRow('Weight', '${widget.weight} kg'),
-            ]),
+              _buildDataRow('Date of Birth', widget.dob, context),
+              _buildDataRow('Gender', widget.gender, context),
+              _buildDataRow('Weight', '${widget.weight} kg', context),
+            ], context),
 
             const SizedBox(height: 25),
 
             _buildSectionTitle('MEDICAL SUMMARY'),
             _buildDataCard([
-              _buildDataRow('Blood Type', widget.bloodType, isHighlight: true),
-              _buildDataRow('Last Donation', widget.lastDonation),
+              _buildDataRow('Blood Type', widget.bloodType, context, isHighlight: true),
+              _buildDataRow('Last Donation', widget.lastDonation, context),
               _buildDataRow(
                 'Chronic Diseases',
                 widget.hasChronicDiseases ? 'Yes' : 'No',
+                context,
               ),
               _buildDataRow(
                 'Regular Medication',
                 widget.takesMedication ? 'Yes' : 'No',
+                context,
               ),
-              _buildDataRow('Recent Surgery', widget.hadSurgery ? 'Yes' : 'No'),
-              _buildDataRow('Anemia', widget.hasAnemia ? 'Yes' : 'No'),
-            ]),
+              _buildDataRow('Recent Surgery', widget.hadSurgery ? 'Yes' : 'No', context),
+              _buildDataRow('Anemia', widget.hasAnemia ? 'Yes' : 'No', context),
+            ], context),
 
             const SizedBox(height: 40),
 
@@ -158,7 +163,7 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+                  backgroundColor: AppColors.redDark,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -241,19 +246,21 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
     );
   }
 
-  Widget _buildDataCard(List<Widget> children) {
+  Widget _buildDataCard(List<Widget> children, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(118, 37, 37, 37),
+        color: isDark ? const Color.fromARGB(118, 37, 37, 37) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(children: children),
     );
   }
 
-  Widget _buildDataRow(String label, String value, {bool isHighlight = false}) {
+  Widget _buildDataRow(String label, String value, BuildContext context, {bool isHighlight = false}) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -266,8 +273,8 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
               textAlign: TextAlign.end,
               style: TextStyle(
                 color: isHighlight
-                    ? const Color.fromARGB(255, 196, 0, 29)
-                    : Colors.white,
+                    ? AppColors.redDark
+                    : cs.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
@@ -278,40 +285,43 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
     );
   }
 
-  Widget _buildProgressStep(bool isActive) {
+  Widget _buildProgressStep(bool isActive, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       height: 4,
       width: 40,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: isActive
-            ? const Color.fromARGB(255, 196, 0, 29)
-            : Colors.white.withValues(alpha: 0.1),
+            ? AppColors.redDark
+            : cs.onSurface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(2),
       ),
     );
   }
 
   void _showSuccessDialog(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        backgroundColor: isDark ? const Color.fromARGB(255, 0, 0, 0) : AppColors.lightSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
               Icons.check_circle_rounded,
-              color: const Color.fromARGB(255, 196, 0, 29),
+              color: AppColors.redDark,
               size: 80,
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'All Set!',
               style: TextStyle(
-                color: Colors.white,
+                color: cs.onSurface,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
@@ -329,7 +339,7 @@ class _ReviewSummaryScreenState extends State<ReviewSummaryScreen> {
                 onPressed: () =>
                     Navigator.pushNamedAndRemoveUntil(context, Routes.donorLoginRoute, (route) => false),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 196, 0, 29),
+                  backgroundColor: AppColors.redDark,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

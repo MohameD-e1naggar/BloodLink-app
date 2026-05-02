@@ -4,6 +4,8 @@ import 'package:www/features/donor/profile/donor_profile_screen.dart';
 import 'package:www/features/donor/requests/donor_request_screen.dart';
 import 'package:www/features/donor/auth/donor_login_screen.dart';
 import 'package:www/features/donor/home/donor_home_screen.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/services/firestore_service.dart';
 
 class DonorWrapper extends StatefulWidget {
   const DonorWrapper({super.key});
@@ -25,7 +27,16 @@ class _DonorWrapperState extends State<DonorWrapper> {
     setState(() => _selectedIndex = index);
   }
 
+  @override
+  void initState() {
+    super.initState();
+    // Fire-and-forget: lazily reset expired emergency requests on app open
+    EmergencyResetService.checkAndResetExpiredCriticalRequests();
+  }
+
   Future<bool> _onWillPop() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     if (_selectedIndex != 0) {
       setState(() => _selectedIndex = 0);
       return false;
@@ -33,24 +44,24 @@ class _DonorWrapperState extends State<DonorWrapper> {
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF250A0A),
+        backgroundColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Logout', style: TextStyle(color: Colors.white)),
+        title: Text('Logout', style: TextStyle(color: cs.onSurface)),
         content: Text(
           'Are you sure you want to log out?',
-          style: TextStyle(color: Colors.white.withOpacity(0.6)),
+          style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('No', style: TextStyle(color: Colors.grey)),
+            child: Text('No', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text(
               'Yes, Logout',
               style: TextStyle(
-                color: Color(0xFFE53935),
+                color: AppColors.redDark,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -69,6 +80,8 @@ class _DonorWrapperState extends State<DonorWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -80,15 +93,15 @@ class _DonorWrapperState extends State<DonorWrapper> {
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.05), width: 1),
+              top: BorderSide(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1), width: 1),
             ),
           ),
           child: BottomNavigationBar(
             currentIndex: _selectedIndex,
             onTap: _onTabTapped,
-            backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-            selectedItemColor: const Color.fromARGB(255, 196, 0, 29),
-            unselectedItemColor: Colors.grey,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            selectedItemColor: AppColors.redDark,
+            unselectedItemColor: cs.onSurface.withValues(alpha: 0.5),
             showSelectedLabels: true,
             showUnselectedLabels: true,
             type: BottomNavigationBarType.fixed,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:www/features/onboarding/onboarding_content.dart';
 import 'package:www/features/onboarding/onboarding_model.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -31,8 +32,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           AnimatedContainer(
@@ -43,12 +46,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 radius: 1.5,
                 colors: _currentPage == 0
                     ? [
-                        const Color.fromARGB(97, 87, 0, 0),
-                        const Color.fromARGB(255, 0, 0, 0),
+                        isDark ? const Color.fromARGB(97, 87, 0, 0) : AppColors.red.withValues(alpha: 0.1),
+                        isDark ? const Color.fromARGB(255, 0, 0, 0) : AppColors.lightBg,
                       ]
                     : [
-                        const Color.fromARGB(255, 0, 0, 0),
-                        const Color.fromARGB(148, 87, 0, 0),
+                        isDark ? const Color.fromARGB(255, 0, 0, 0) : AppColors.lightBg,
+                        isDark ? const Color.fromARGB(148, 87, 0, 0) : AppColors.red.withValues(alpha: 0.15),
                       ],
               ),
             ),
@@ -65,17 +68,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      _onboardingData[index].icon,
-                      size: 150,
-                      color: const Color.fromARGB(255, 255, 4, 0),
-                    ),
-                    const SizedBox(height: 60),
-                    Text(
-                      _onboardingData[index].title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
+                      Icon(
+                        _onboardingData[index].icon,
+                        size: 150,
+                        color: AppColors.redDark,
+                      ),
+                      const SizedBox(height: 60),
+                      Text(
+                        _onboardingData[index].title,
+                        style: TextStyle(
+                          color: cs.onSurface,
+                          fontSize: 32,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 4,
                       ),
@@ -85,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       _onboardingData[index].description,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: cs.onSurface.withValues(alpha: 0.7),
                         fontSize: 16,
                         height: 1.6,
                       ),
@@ -128,12 +131,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   curve: Curves.easeOut,
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                  shape: StadiumBorder(),
+                  side: BorderSide(color: cs.onSurface.withValues(alpha: 0.2)),
+                  shape: const StadiumBorder(),
                 ),
-                child: const Text(
+                child: Text(
                   'SKIP',
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  style: TextStyle(color: cs.onSurface, fontSize: 12),
                 ),
               ),
             ),
@@ -150,8 +153,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       width: _currentPage == index ? 30 : 10,
       decoration: BoxDecoration(
         color: _currentPage == index
-            ? const Color.fromARGB(255, 196, 0, 29)
-            : Colors.white24,
+            ? AppColors.redDark
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
         borderRadius: BorderRadius.circular(2),
       ),
     );

@@ -32,37 +32,29 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(0, -0.5),
-            radius: 1.0,
-            colors: [
-              Color(0xFF4A0000),
-              Colors.black,
-            ],
-            stops: [0.0, 1.0],
-          ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildGlowingBloodIcon(),
+            _buildGlowingBloodIcon(context),
             const SizedBox(height: 40),
-            const Text(
+            Text(
               'Blood Link',
               style: TextStyle(
                 fontSize: 38,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.primary,
                 letterSpacing: 1.5,
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Save Lives Faster',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white70,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 letterSpacing: 0.8,
               ),
             ),
@@ -72,15 +64,14 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  Widget _buildGlowingBloodIcon() {
+  Widget _buildGlowingBloodIcon(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(
-              0xFFE53935,
-            ).withValues(alpha: 0.4),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
             blurRadius: 80,
             spreadRadius: 15,
           ),
@@ -89,10 +80,10 @@ class _SplashScreenState extends State<SplashScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1414),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(35),
           border: Border.all(
-            color: const Color.fromARGB(255, 196, 0, 29).withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           ),
         ),
         child: Image.asset(

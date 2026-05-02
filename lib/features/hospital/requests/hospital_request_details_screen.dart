@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class RequestDetailsScreen extends StatelessWidget {
   const RequestDetailsScreen({
@@ -9,20 +10,20 @@ class RequestDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeroCard(),
+            _buildHeroCard(context),
             const SizedBox(height: 24),
-            _buildClinicalNotes(),
+            _buildClinicalNotes(context),
             const SizedBox(height: 24),
-            _buildMatchingStatus(),
+            _buildMatchingStatus(context),
             const SizedBox(height: 24),
-            _buildLogisticsProgress(),
+            _buildLogisticsProgress(context),
             const SizedBox(height: 40),
           ],
         ),
@@ -31,18 +32,19 @@ class RequestDetailsScreen extends StatelessWidget {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AppBar(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       centerTitle: true,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+        icon: Icon(Icons.arrow_back, color: cs.onSurface, size: 22),
         onPressed: () => Navigator.pop(context),
       ),
-      title: const Text(
+      title: Text(
         'Request Details',
         style: TextStyle(
-          color: Colors.white,
+          color: cs.onSurface,
           fontWeight: FontWeight.bold,
           fontSize: 18,
         ),
@@ -50,14 +52,16 @@ class RequestDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroCard() {
+  Widget _buildHeroCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C0A0A),
+        color: isDark ? const Color(0xFF1C0A0A) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF3A1515)),
+        border: Border.all(color: isDark ? const Color(0xFF3A1515) : cs.onSurface.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +79,7 @@ class RequestDetailsScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 196, 0, 29),
+                  color: AppColors.redDark,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -99,21 +103,21 @@ class RequestDetailsScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: const [
+            children: [
               Text(
                 'O-',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: cs.onSurface,
                   fontSize: 48,
                   fontWeight: FontWeight.bold,
                   height: 1,
                 ),
               ),
-              SizedBox(width: 14),
+              const SizedBox(width: 14),
               Text(
                 'Blood Type',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: cs.onSurface,
                   fontSize: 20,
                   fontWeight: FontWeight.w500,
                 ),
@@ -125,22 +129,22 @@ class RequestDetailsScreen extends StatelessWidget {
             children: [
               const Icon(
                 Icons.water_drop_outlined,
-                color: Color(0xFFE53935),
+                color: AppColors.redDark,
                 size: 18,
               ),
               const SizedBox(width: 6),
-              const Text(
+              Text(
                 '4 Units',
-                style: TextStyle(color: Colors.white, fontSize: 15),
+                style: TextStyle(color: cs.onSurface, fontSize: 15),
               ),
               const SizedBox(width: 20),
-              Container(width: 1, height: 18, color: const Color(0xFF3A3A3A)),
+              Container(width: 1, height: 18, color: cs.onSurface.withValues(alpha: 0.2)),
               const SizedBox(width: 20),
-              const Icon(Icons.emergency, color: Color(0xFFE53935), size: 18),
+              const Icon(Icons.emergency, color: AppColors.redDark, size: 18),
               const SizedBox(width: 6),
-              const Text(
+              Text(
                 'Emergency Surgery',
-                style: TextStyle(color: Colors.white, fontSize: 15),
+                style: TextStyle(color: cs.onSurface, fontSize: 15),
               ),
             ],
           ),
@@ -149,7 +153,9 @@ class RequestDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildClinicalNotes() {
+  Widget _buildClinicalNotes(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -157,20 +163,21 @@ class RequestDetailsScreen extends StatelessWidget {
           Icons.description_outlined,
           'CLINICAL NOTES',
           const Color(0xFFE57373),
+          context,
         ),
         const SizedBox(height: 12),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A),
+            color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF2A2A2A)),
+            border: Border.all(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
           ),
-          child: const Text(
+          child: Text(
             'Patient ID: . Scheduled for Emergency Surgery at 14:00. High urgency required for',
             style: TextStyle(
-              color: Color(0xFFBBBBBB),
+              color: cs.onSurface.withValues(alpha: 0.7),
               fontSize: 14,
               height: 1.6,
             ),
@@ -180,7 +187,9 @@ class RequestDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMatchingStatus() {
+  Widget _buildMatchingStatus(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -188,14 +197,15 @@ class RequestDetailsScreen extends StatelessWidget {
           Icons.settings_outlined,
           'MATCHING STATUS',
           const Color(0xFFE57373),
+          context,
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1C0A0A),
+            color: isDark ? const Color(0xFF1C0A0A) : AppColors.lightCard,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF3A1515)),
+            border: Border.all(color: isDark ? const Color(0xFF3A1515) : cs.onSurface.withOpacity(0.1)),
           ),
           child: Row(
             children: [
@@ -203,40 +213,40 @@ class RequestDetailsScreen extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2A1515),
+                  color: isDark ? const Color(0xFF2A1515) : AppColors.lightSurface,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.business,
-                  color: Color(0xFFE53935),
+                  color: AppColors.redDark,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     'City Central Blood Bank',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: cs.onSurface,
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Icon(
                         Icons.location_on_outlined,
-                        color: Color(0xFF888888),
+                        color: cs.onSurface.withValues(alpha: 0.6),
                         size: 13,
                       ),
-                      SizedBox(width: 3),
+                      const SizedBox(width: 3),
                       Text(
                         '2.4 km away',
                         style: TextStyle(
-                          color: Color(0xFF888888),
+                          color: cs.onSurface.withValues(alpha: 0.6),
                           fontSize: 13,
                         ),
                       ),
@@ -255,6 +265,7 @@ class RequestDetailsScreen extends StatelessWidget {
           statusColor: const Color(0xFF43A047),
           avatarColor: const Color(0xFF5D4037),
           initials: 'MJ',
+          context: context,
         ),
         const SizedBox(height: 10),
         _buildDonorCard(
@@ -264,6 +275,7 @@ class RequestDetailsScreen extends StatelessWidget {
           statusColor: const Color(0xFFFFB300),
           avatarColor: const Color(0xFF4A148C),
           initials: 'SW',
+          context: context,
         ),
       ],
     );
@@ -276,13 +288,16 @@ class RequestDetailsScreen extends StatelessWidget {
     required Color statusColor,
     required Color avatarColor,
     required String initials,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2A2A2A)),
+        border: Border.all(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
       ),
       child: Row(
         children: [
@@ -305,8 +320,8 @@ class RequestDetailsScreen extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: cs.onSurface,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -314,8 +329,8 @@ class RequestDetailsScreen extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   role,
-                  style: const TextStyle(
-                    color: Color(0xFF888888),
+                  style: TextStyle(
+                    color: cs.onSurface.withValues(alpha: 0.6),
                     fontSize: 12,
                     letterSpacing: 0.5,
                   ),
@@ -345,7 +360,7 @@ class RequestDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogisticsProgress() {
+  Widget _buildLogisticsProgress(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -353,6 +368,7 @@ class RequestDetailsScreen extends StatelessWidget {
           Icons.local_shipping_outlined,
           'LOGISTICS PROGRESS',
           const Color(0xFFE57373),
+          context,
         ),
         const SizedBox(height: 16),
         _buildTimelineStep(
@@ -361,6 +377,7 @@ class RequestDetailsScreen extends StatelessWidget {
           isCompleted: true,
           isActive: false,
           isLast: false,
+          context: context,
         ),
         _buildTimelineStep(
           title: 'Matched with Bank',
@@ -368,6 +385,7 @@ class RequestDetailsScreen extends StatelessWidget {
           isCompleted: true,
           isActive: false,
           isLast: false,
+          context: context,
         ),
         _buildTimelineStep(
           title: 'In Transit',
@@ -375,6 +393,7 @@ class RequestDetailsScreen extends StatelessWidget {
           isCompleted: false,
           isActive: true,
           isLast: false,
+          context: context,
         ),
         _buildTimelineStep(
           title: 'Fulfilled',
@@ -382,6 +401,7 @@ class RequestDetailsScreen extends StatelessWidget {
           isCompleted: false,
           isActive: false,
           isLast: true,
+          context: context,
         ),
       ],
     );
@@ -393,12 +413,15 @@ class RequestDetailsScreen extends StatelessWidget {
     required bool isCompleted,
     required bool isActive,
     required bool isLast,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     final Color dotColor = isCompleted
-        ? const Color.fromARGB(255, 196, 0, 29)
+        ? AppColors.redDark
         : isActive
-        ? const Color.fromARGB(255, 196, 0, 29)
-        : const Color(0xFF2A2A2A);
+        ? AppColors.redDark
+        : isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1);
 
     return IntrinsicHeight(
       child: Row(
@@ -413,8 +436,8 @@ class RequestDetailsScreen extends StatelessWidget {
                   height: 32,
                   decoration: BoxDecoration(
                     color: isCompleted || isActive
-                        ? const Color.fromARGB(255, 196, 0, 29)
-                        : const Color(0xFF1A1A1A),
+                        ? AppColors.redDark
+                        : (isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: dotColor,
@@ -429,7 +452,7 @@ class RequestDetailsScreen extends StatelessWidget {
                         : Icons.circle_outlined,
                     color: isCompleted || isActive
                         ? Colors.white
-                        : const Color(0xFF3A3A3A),
+                        : (isDark ? const Color(0xFF3A3A3A) : cs.onSurface.withOpacity(0.3)),
                     size: isActive ? 10 : 16,
                   ),
                 ),
@@ -438,8 +461,8 @@ class RequestDetailsScreen extends StatelessWidget {
                     child: Container(
                       width: 2,
                       color: isCompleted
-                          ? const Color.fromARGB(255, 196, 0, 29)
-                          : const Color(0xFF2A2A2A),
+                          ? AppColors.redDark
+                          : (isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
                     ),
                   ),
               ],
@@ -457,8 +480,8 @@ class RequestDetailsScreen extends StatelessWidget {
                     title,
                     style: TextStyle(
                       color: isActive
-                          ? const Color.fromARGB(255, 196, 0, 29)
-                          : Colors.white,
+                          ? AppColors.redDark
+                          : cs.onSurface,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -467,8 +490,8 @@ class RequestDetailsScreen extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        color: Color(0xFF888888),
+                      style: TextStyle(
+                        color: cs.onSurface.withValues(alpha: 0.6),
                         fontSize: 12,
                       ),
                     ),
@@ -482,7 +505,7 @@ class RequestDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(IconData icon, String title, Color color) {
+  Widget _buildSectionHeader(IconData icon, String title, Color color, BuildContext context) {
     return Row(
       children: [
         Icon(icon, color: color, size: 15),

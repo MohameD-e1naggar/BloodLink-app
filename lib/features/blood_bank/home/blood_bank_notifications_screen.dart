@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:www/core/services/firestore_service.dart';
+import 'package:www/core/models/app_notification.dart';
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class BloodBankNotifications extends StatefulWidget {
   const BloodBankNotifications({super.key});
@@ -8,341 +12,185 @@ class BloodBankNotifications extends StatefulWidget {
 }
 
 class _BloodBankNotificationsState extends State<BloodBankNotifications> {
-  final Map<String, int> _bloodStock = {
-    'A+': 45,
-    'A-': 12,
-    'B+': 28,
-    'B-': 5,
-    'O+': 55,
-    'O-': 8,
-    'AB+': 25,
-    'AB-': 3,
-  };
+  late String uid;
 
-  Map<String, dynamic> _getStatus(int units) {
-    if (units <= 10) {
-      return {
-        'label': 'CRITICAL',
-        'color': const Color.fromARGB(255, 196, 0, 29),
-        'progress': 0.2,
-      };
-    } else if (units <= 25) {
-      return {'label': 'NORMAL', 'color': Colors.orange, 'progress': 0.5};
-    } else {
-      return {'label': 'STABLE', 'color': Colors.green, 'progress': 0.8};
-    }
+  @override
+  void initState() {
+    super.initState();
+    uid = FirebaseAuth.instance.currentUser!.uid;
   }
 
-  void _showInventoryDialog() {
-    String? selectedType;
-    final TextEditingController _amountController = TextEditingController();
-    bool isAdding = true;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1A1A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Row(
-            children: [
-              Icon(Icons.settings_input_component, color: Color(0xFFE53935)),
-              SizedBox(width: 10),
-              Text(
-                'Stock Management',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                dropdownColor: const Color(0xFF2A2A2A),
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('Select Blood Type'),
-                items: _bloodStock.keys
-                    .map(
-                      (type) =>
-                          DropdownMenuItem(value: type, child: Text(type)),
-                    )
-                    .toList(),
-                onChanged: (val) => selectedType = val,
-              ),
-              const SizedBox(height: 20),
-              ToggleButtons(
-                isSelected: [isAdding, !isAdding],
-                onPressed: (index) =>
-                    setDialogState(() => isAdding = index == 0),
-                borderRadius: BorderRadius.circular(10),
-                selectedColor: Colors.white,
-                fillColor: isAdding
-                    ? Colors.green.withOpacity(0.3)
-                    : Colors.red.withOpacity(0.3),
-                color: Colors.grey,
-                constraints: const BoxConstraints(minWidth: 100, minHeight: 40),
-                children: const [Text('ADD'), Text('REMOVE')],
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _amountController,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('Enter Units Amount'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 196, 0, 29),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () {
-                if (selectedType != null && _amountController.text.isNotEmpty) {
-                  int amount = int.tryParse(_amountController.text) ?? 0;
-                  setState(() {
-                    if (isAdding) {
-                      _bloodStock[selectedType!] =
-                          _bloodStock[selectedType!]! + amount;
-                    } else {
-                      _bloodStock[selectedType!] =
-                          (_bloodStock[selectedType!]! - amount).clamp(0, 9999);
-                    }
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text(
-                'UPDATE STOCK',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFE53935)),
-      ),
-      filled: true,
-      fillColor: const Color(0xFF0F0F0F),
-    );
+  String _formatTimestamp(String? isoString) {
+    if (isoString == null) return '';
+    final dt = DateTime.parse(isoString);
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+    return 'Just now';
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 196, 0, 29),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.water_drop, color: Colors.white, size: 20),
-          ),
-        ),
-        title: const Text(
-          'City Central Blood Bank',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Live Inventory',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.1,
-              ),
-              itemCount: _bloodStock.length,
-              itemBuilder: (context, index) {
-                String type = _bloodStock.keys.elementAt(index);
-                int count = _bloodStock[type]!;
-                var status = _getStatus(count);
-                return _buildBloodCard(
-                  type: type,
-                  count: count.toString(),
-                  status: status['label'],
-                  color: status['color'],
-                  progress: status['progress'],
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-            InkWell(
-              onTap: _showInventoryDialog,
-              child: _buildActionBtn(
-                'MANAGE INVENTORY',
-                Icons.edit_calendar_rounded,
-                const Color.fromARGB(255, 196, 0, 29),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildOutlineBtn('CHECK EXPIRY UNITS', Icons.history_toggle_off),
-          ],
-        ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: _buildAppBar(context),
+      body: StreamBuilder<List<AppNotification>>(
+        stream: NotificationService.streamForReceiver(uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.redDark));
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}", style: TextStyle(color: cs.onSurface)));
+          }
+          final notifications = snapshot.data ?? [];
+          if (notifications.isEmpty) {
+            return Center(child: Text("No notifications yet", style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7))));
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notif = notifications[index];
+              return _buildNotificationItem(
+                context: context,
+                title: notif.title ?? 'Notification',
+                body: notif.body ?? '',
+                time: _formatTimestamp(notif.timestamp),
+                icon: notif.type == 'request_accepted_blood_bank' ? Icons.check_circle :
+                      notif.type == 'request_rejected_blood_bank' ? Icons.cancel :
+                      notif.type == 'emergency_approved_blood_bank' ? Icons.warning_amber_rounded :
+                      Icons.info_outline,
+                iconColor: notif.type == 'request_accepted_blood_bank' ? const Color(0xFF43A047) :
+                           notif.type == 'request_rejected_blood_bank' ? AppColors.redDark :
+                           notif.type == 'emergency_approved_blood_bank' ? const Color(0xFFFFB300) :
+                           const Color(0xFF2196F3),
+                isUnread: !notif.isRead,
+              );
+            },
+          );
+        },
       ),
     );
   }
 
-  Widget _buildBloodCard({
-    required String type,
-    required String count,
-    required String status,
-    required Color color,
-    required double progress,
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+    return AppBar(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      elevation: 0,
+      centerTitle: true,
+      title: Text(
+        'Notifications',
+        style: TextStyle(
+          color: cs.onSurface,
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
+      ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: AppColors.redDark),
+        onPressed: () => Navigator.pop(context),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {},
+          child: Text(
+            "Clear All",
+            style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 13),
+          ),
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withValues(alpha: 0.1), height: 1),
+      ),
+    );
+  }
+
+  Widget _buildNotificationItem({
+    required BuildContext context,
+    required String title,
+    required String body,
+    required String time,
+    required IconData icon,
+    required Color iconColor,
+    required bool isUnread,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isUnread ? (isDark ? const Color(0xFF1A1A1A) : AppColors.lightCard) : Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2A2A2A)),
+        border: Border.all(
+          color: isUnread
+              ? AppColors.redDark.withValues(alpha: 0.3)
+              : (isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withValues(alpha: 0.1)),
+        ),
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                type,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: cs.onSurface,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (isUnread)
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.redDark,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  status,
+                const SizedBox(height: 6),
+                Text(
+                  body,
                   style: TextStyle(
-                    color: color,
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
+                    color: cs.onSurface.withValues(alpha: 0.6),
+                    fontSize: 13,
+                    height: 1.4,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            count,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Text(
-            'Units in stock',
-            style: TextStyle(color: Colors.grey, fontSize: 10),
-          ),
-          const Spacer(),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: const Color(0xFF2A2A2A),
-            color: color,
-            minHeight: 4,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionBtn(String title, IconData icon, Color color) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOutlineBtn(String title, IconData icon) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2A2A2A)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+                const SizedBox(height: 8),
+                Text(
+                  time,
+                  style: TextStyle(
+                    color: cs.onSurface.withValues(alpha: 0.4),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

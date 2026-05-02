@@ -5,6 +5,7 @@ import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart';
 import 'package:www/core/models/user.dart' as my_user;
+import 'package:www/core/utiles/ThemeManager.dart';
 
 class BloodBankProfileScreen extends StatelessWidget {
 
@@ -30,17 +31,32 @@ class BloodBankProfileScreen extends StatelessWidget {
         }
 
         final user = snapshot.data!;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final cs = Theme.of(context).colorScheme;
+
         return Scaffold(
-          backgroundColor: const Color(0xFF0F0F0F),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: const Text(
+            title: Text(
               'Blood Bank Profile',
-              style: TextStyle(color: Colors.white, fontSize: 18),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 18),
             ),
             centerTitle: true,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  isDark ? Icons.light_mode : Icons.dark_mode,
+                  color: cs.onSurface,
+                ),
+                onPressed: () {
+                  AppTheme.themeNotifier.value = isDark ? ThemeMode.light : ThemeMode.dark;
+                  SharedPreferencesHelper.setThemeMode(!isDark);
+                },
+              ),
+            ],
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -60,9 +76,9 @@ class BloodBankProfileScreen extends StatelessWidget {
                             width: 2,
                           ),
                         ),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 50,
-                          backgroundColor: Color(0xFF1A1A1A),
+                          backgroundColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightSurface,
                           child: Text(
                             'B',
                             style: TextStyle(
@@ -88,11 +104,7 @@ class BloodBankProfileScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                  Text(
                   user.name ?? "",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -118,29 +130,32 @@ class BloodBankProfileScreen extends StatelessWidget {
                     Icons.email,
                     'EMAIL ADDRESS',
                     user.email ?? "",
+                    context,
                   ),
-                  _buildDivider(),
+                  _buildDivider(context),
                   _buildInfoTile(
                     Icons.phone,
                     'CONTACT NUMBER',
                     user.phoneNumber ?? "",
+                    context,
                   ),
-                ]),
+                ], context),
 
                 const SizedBox(height: 24),
 
                 _buildSectionTitle('RESPONSIBLE PERSON'),
                 _buildInfoCard([
-                  _buildInfoTile(Icons.person, 'FULL NAME', user.adminName ?? ""),
-                  _buildDivider(),
-                  _buildInfoTile(Icons.badge, 'MEDICAL ID', user.adminNationalId ?? ""),
-                  _buildDivider(),
+                  _buildInfoTile(Icons.person, 'FULL NAME', user.adminName ?? "", context),
+                  _buildDivider(context),
+                  _buildInfoTile(Icons.badge, 'MEDICAL ID', user.adminNationalId ?? "", context),
+                  _buildDivider(context),
                   _buildInfoTile(
                     Icons.smartphone,
                     'DIRECT PHONE',
                     user.adminPhoneNumber ?? "",
+                    context,
                   ),
-                ]),
+                ], context),
 
                 const SizedBox(height: 24),
 
@@ -150,19 +165,21 @@ class BloodBankProfileScreen extends StatelessWidget {
                     Icons.location_on,
                     'ADDRESS',
                     user.address ?? "",
+                    context,
                   ),
                   const SizedBox(height: 12),
                   Container(
                     height: 120,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A1515),
+                      color: isDark ? const Color(0xFF2A1515) : AppColors.lightCard,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
                     ),
-                    child: const Center(
-                      child: Icon(Icons.map_outlined, color: Colors.white24, size: 36),
+                    child: Center(
+                      child: Icon(Icons.map_outlined, color: Colors.grey, size: 36),
                     ),
                   ),
-                ]),
+                ], context),
                 const SizedBox(height: 40),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -175,17 +192,17 @@ class BloodBankProfileScreen extends StatelessWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A1A1A),
+                      backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
                       minimumSize: const Size(double.infinity, 55),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
-                        side: const BorderSide(color: Color(0xFF2A2A2A)),
+                        side: BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
                       ),
                     ),
                     child: const Text(
                       "Logout",
                       style: TextStyle(
-                        color: Color.fromARGB(255, 196, 0, 29),
+                        color: AppColors.redDark,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -208,7 +225,7 @@ class BloodBankProfileScreen extends StatelessWidget {
         child: Text(
           title,
           style: const TextStyle(
-            color: Color(0xFFE53935),
+            color: AppColors.redDark,
             fontSize: 12,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
@@ -218,30 +235,35 @@ class BloodBankProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(List<Widget> children) {
+  Widget _buildInfoCard(List<Widget> children, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.05)),
       ),
       child: Column(children: children),
     );
   }
 
-  Widget _buildInfoTile(IconData icon, String label, String value) {
+  Widget _buildInfoTile(IconData icon, String label, String value, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF2A1515),
+            color: isDark ? const Color(0xFF2A1515) : AppColors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
-            color: const Color.fromARGB(255, 196, 0, 29),
+            color: AppColors.redDark,
             size: 20,
           ),
         ),
@@ -261,8 +283,8 @@ class BloodBankProfileScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 value,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: cs.onSurface,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -274,10 +296,11 @@ class BloodBankProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Divider(color: Colors.grey[800], thickness: 0.5, indent: 45),
+      child: Divider(color: cs.onSurface.withValues(alpha: 0.1), thickness: 0.5, indent: 45),
     );
   }
 }
