@@ -1,0 +1,170 @@
+Analyzing bloodLinkapp...                                       
+
+   info • The file name 'MyApp.dart' isn't a lower_case_with_underscores identifier • lib/MyApp.dart:1:1 • file_names
+   info • The import of 'package:flutter/cupertino.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' • lib/MyApp.dart:2:8 • unnecessary_import
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:20:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:30:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:40:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:44:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:61:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:65:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:81:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:100:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:107:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:117:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:126:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/cache/shared_preferences_helper.dart:134:7 • avoid_print
+   info • The file name 'ThemeManager.dart' isn't a lower_case_with_underscores identifier • lib/core/utiles/ThemeManager.dart:1:1 • file_names
+   info • The file name 'ValidatorManager.dart' isn't a lower_case_with_underscores identifier • lib/core/utiles/ValidatorManager.dart:1:1 • file_names
+warning • Unused import: 'package:www/features/blood_bank/blood_bank_wrapper.dart' • lib/features/blood_bank/auth/blood_bank_login_screen.dart:7:8 • unused_import
+warning • Unused import: 'package:www/features/blood_bank/auth/registration/blood_bank_registration_screen.dart' • lib/features/blood_bank/auth/blood_bank_login_screen.dart:8:8 • unused_import
+warning • The value of the local variable 'isDark' isn't used • lib/features/blood_bank/auth/blood_bank_login_screen.dart:35:11 • unused_local_variable
+warning • Unused import: 'package:www/features/blood_bank/auth/registration/blood_bank_responsible_person_screen.dart' • lib/features/blood_bank/auth/registration/blood_bank_registration_screen.dart:5:8 • unused_import
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/blood_bank/auth/registration/blood_bank_registration_screen.dart:63:66 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/blood_bank/auth/registration/blood_bank_registration_screen.dart:154:68 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/blood_bank/auth/registration/blood_bank_registration_screen.dart:161:66 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/blood_bank/auth/registration/blood_bank_registration_screen.dart:164:66 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/blood_bank/auth/registration/blood_bank_registration_screen.dart:299:52 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/blood_bank/auth/registration/blood_bank_registration_screen.dart:370:56 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/blood_bank/auth/registration/blood_bank_registration_screen.dart:380:54 • undefined_getter
+warning • Unused import: 'package:www/features/blood_bank/blood_bank_wrapper.dart' • lib/features/blood_bank/auth/registration/blood_bank_responsible_person_screen.dart:8:8 • unused_import
+warning • Unused import: 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart' • lib/features/blood_bank/auth/registration/blood_bank_responsible_person_screen.dart:9:8 • unused_import
+warning • Unused import: 'package:www/core/models/blood_request.dart' • lib/features/blood_bank/home/blood_bank_home_screen.dart:5:8 • unused_import
+   info • An uninitialized field should have an explicit type annotation • lib/features/blood_bank/home/blood_bank_home_screen.dart:24:12 • prefer_typing_uninitialized_variables
+   info • Missing type annotation • lib/features/blood_bank/home/blood_bank_home_screen.dart:24:12 • strict_top_level_inference
+   info • The local variable '_amountController' starts with an underscore • lib/features/blood_bank/home/blood_bank_home_screen.dart:42:33 • no_leading_underscores_for_local_identifiers
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_home_screen.dart:88:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_home_screen.dart:89:34 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/features/blood_bank/home/blood_bank_home_screen.dart:151:33 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_home_screen.dart:175:87 • deprecated_member_use
+warning • The value of the local variable 'isDark' isn't used • lib/features/blood_bank/home/blood_bank_home_screen.dart:201:11 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_home_screen.dart:348:83 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_home_screen.dart:367:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_home_screen.dart:397:78 • deprecated_member_use
+   info • The member 'build' overrides an inherited member but isn't annotated with '@override' • lib/features/blood_bank/home/blood_bank_home_screen.dart:446:10 • annotate_overrides
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_home_screen.dart:485:93 • deprecated_member_use
+   info • The local variable '_amountController' starts with an underscore • lib/features/blood_bank/home/blood_bank_notifications_screen.dart:38:33 • no_leading_underscores_for_local_identifiers
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_notifications_screen.dart:82:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_notifications_screen.dart:83:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/home/blood_bank_notifications_screen.dart:263:32 • deprecated_member_use
+warning • Unused import: 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart' • lib/features/blood_bank/profile/blood_bank_profile_screen.dart:6:8 • unused_import
+warning • Unused import: 'package:www/core/models/user.dart' • lib/features/blood_bank/profile/blood_bank_profile_screen.dart:7:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/requests/blood_bank_requests_screen.dart:125:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/requests/blood_bank_requests_screen.dart:126:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/blood_bank/requests/blood_bank_requests_screen.dart:208:45 • deprecated_member_use
+warning • Unused import: 'package:www/features/donor/auth/registration/basic_info_screen.dart' • lib/features/donor/auth/donor_login_screen.dart:7:8 • unused_import
+warning • Unused import: 'package:www/features/donor/donor_wrapper.dart' • lib/features/donor/auth/donor_login_screen.dart:8:8 • unused_import
+warning • Unused import: 'package:www/features/onboarding/role_selection_screen.dart' • lib/features/donor/auth/donor_login_screen.dart:9:8 • unused_import
+warning • Unused import: 'package:www/features/donor/auth/registration/personal_info_screen.dart' • lib/features/donor/auth/registration/basic_info_screen.dart:6:8 • unused_import
+warning • Unused import: 'package:www/features/donor/auth/registration/review_summary_screen.dart' • lib/features/donor/auth/registration/health_screening_screen.dart:3:8 • unused_import
+warning • Unused import: 'package:www/features/donor/auth/registration/health_screening_screen.dart' • lib/features/donor/auth/registration/personal_info_screen.dart:3:8 • unused_import
+warning • The value of the local variable 'isDark' isn't used • lib/features/donor/auth/registration/review_summary_screen.dart:49:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/donor/auth/registration/review_summary_screen.dart:161:42 • use_build_context_synchronously
+   info • An uninitialized variable should have an explicit type annotation • lib/features/donor/auth/registration/review_summary_screen.dart:191:11 • prefer_typing_uninitialized_variables
+warning • Unused import: 'package:www/features/donor/auth/donor_login_screen.dart' • lib/features/donor/donor_wrapper.dart:5:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/donor_wrapper.dart:41:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/donor_wrapper.dart:83:51 • deprecated_member_use
+warning • Unused import: 'package:www/features/donor/requests/donor_appointment_screen.dart' • lib/features/donor/home/donor_home_screen.dart:7:8 • unused_import
+warning • Unused import: 'package:www/features/donor/requests/donor_request_details_screen.dart' • lib/features/donor/home/donor_home_screen.dart:8:8 • unused_import
+warning • Unused import: 'package:www/features/donor/auth/donor_login_screen.dart' • lib/features/donor/home/donor_home_screen.dart:9:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:215:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:217:58 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:256:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:258:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:321:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:323:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:367:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:440:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:475:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/home/donor_home_screen.dart:477:48 • deprecated_member_use
+   info • Constructors in '@immutable' classes should be declared as 'const' • lib/features/donor/profile/donor_profile_screen.dart:10:4 • prefer_const_constructors_in_immutables
+warning • Unused import: 'package:www/features/donor/requests/donor_confirm_donation_screen.dart' • lib/features/donor/requests/donor_appointment_screen.dart:4:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_appointment_screen.dart:67:59 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_appointment_screen.dart:113:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_appointment_screen.dart:115:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_appointment_screen.dart:139:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_appointment_screen.dart:152:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_appointment_screen.dart:171:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_appointment_screen.dart:178:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_appointment_screen.dart:193:24 • deprecated_member_use
+warning • Unused import: 'package:www/features/donor/requests/donor_request_screen.dart' • lib/features/donor/requests/donor_confirm_donation_screen.dart:8:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/donor/requests/donor_request_details_screen.dart:64:32 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_request_details_screen.dart:205:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_request_details_screen.dart:248:45 • deprecated_member_use
+warning • Unused import: 'package:www/core/models/user.dart' • lib/features/donor/requests/donor_request_screen.dart:6:8 • unused_import
+warning • Unused import: 'package:www/features/donor/requests/donor_request_details_screen.dart' • lib/features/donor/requests/donor_request_screen.dart:7:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_request_screen.dart:114:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/donor/requests/donor_request_screen.dart:144:37 • deprecated_member_use
+warning • Unused import: 'package:www/features/hospital/hospital_wrapper.dart' • lib/features/hospital/auth/hospital_login_screen.dart:7:8 • unused_import
+warning • Unused import: 'package:www/features/hospital/auth/registration/hospital_registration_screen.dart' • lib/features/hospital/auth/hospital_login_screen.dart:9:8 • unused_import
+warning • The value of the local variable 'isDark' isn't used • lib/features/hospital/auth/hospital_login_screen.dart:36:11 • unused_local_variable
+warning • Unused import: 'package:www/features/hospital/auth/registration/hospital_responsible_person_screen.dart' • lib/features/hospital/auth/registration/hospital_registration_screen.dart:5:8 • unused_import
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/hospital/auth/registration/hospital_registration_screen.dart:111:68 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/hospital/auth/registration/hospital_registration_screen.dart:118:66 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/hospital/auth/registration/hospital_registration_screen.dart:121:66 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/hospital/auth/registration/hospital_registration_screen.dart:255:52 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/hospital/auth/registration/hospital_registration_screen.dart:326:56 • undefined_getter
+  error • The getter 'lightOnSurface' isn't defined for the type 'AppColors' • lib/features/hospital/auth/registration/hospital_registration_screen.dart:336:54 • undefined_getter
+warning • Unused import: 'package:www/features/hospital/auth/hospital_login_screen.dart' • lib/features/hospital/auth/registration/hospital_responsible_person_screen.dart:6:8 • unused_import
+  error • Methods can't be invoked in constant expressions • lib/features/hospital/auth/registration/hospital_responsible_person_screen.dart:97:32 • const_eval_method_invocation
+  error • 2 positional arguments expected by '_buildFieldLabel', but 1 found • lib/features/hospital/auth/registration/hospital_responsible_person_screen.dart:141:59 • not_enough_positional_arguments
+  error • 2 positional arguments expected by '_buildFieldLabel', but 1 found • lib/features/hospital/auth/registration/hospital_responsible_person_screen.dart:149:69 • not_enough_positional_arguments
+warning • Unused import: 'package:www/features/hospital/home/hospital_notifications_screen.dart' • lib/features/hospital/home/hospital_home_screen.dart:5:8 • unused_import
+warning • Unused import: 'package:www/features/hospital/requests/hospital_blood_request_screen.dart' • lib/features/hospital/home/hospital_home_screen.dart:10:8 • unused_import
+warning • Unused import: 'package:www/features/hospital/home/hospital_search_screen.dart' • lib/features/hospital/home/hospital_home_screen.dart:11:8 • unused_import
+warning • The value of the field '<unnamed>' isn't used • lib/features/hospital/home/hospital_home_screen.dart:22:7 • unused_field
+  error • The method '_buildUpdateItem' isn't defined for the type '_HospitalHomeScreenState' • lib/features/hospital/home/hospital_home_screen.dart:497:23 • undefined_method
+  error • Can't have modifier 'required' here • lib/features/hospital/home/hospital_home_screen.dart:564:5 • extraneous_modifier
+  error • Non-nullable instance field 'title' must be initialized • lib/features/hospital/home/hospital_home_screen.dart:564:21 • not_initialized_non_nullable_instance_field
+  error • Expected to find ';' • lib/features/hospital/home/hospital_home_screen.dart:565:5 • expected_token
+  error • Non-nullable instance field 'required' must be initialized • lib/features/hospital/home/hospital_home_screen.dart:565:5 • not_initialized_non_nullable_instance_field
+  error • Non-nullable instance field 'subtitle' must be initialized • lib/features/hospital/home/hospital_home_screen.dart:565:21 • not_initialized_non_nullable_instance_field
+  error • Expected to find ';' • lib/features/hospital/home/hospital_home_screen.dart:566:5 • expected_token
+  error • Non-nullable instance field 'required' must be initialized • lib/features/hospital/home/hospital_home_screen.dart:566:5 • not_initialized_non_nullable_instance_field
+  error • The name 'required' is already defined • lib/features/hospital/home/hospital_home_screen.dart:566:5 • duplicate_definition
+  error • Non-nullable instance field 'color' must be initialized • lib/features/hospital/home/hospital_home_screen.dart:566:20 • not_initialized_non_nullable_instance_field
+  error • Expected to find ';' • lib/features/hospital/home/hospital_home_screen.dart:567:5 • expected_token
+  error • Non-nullable instance field 'required' must be initialized • lib/features/hospital/home/hospital_home_screen.dart:567:5 • not_initialized_non_nullable_instance_field
+  error • The name 'required' is already defined • lib/features/hospital/home/hospital_home_screen.dart:567:5 • duplicate_definition
+   info • The member 'context' overrides an inherited member but isn't annotated with '@override' • lib/features/hospital/home/hospital_home_screen.dart:567:27 • annotate_overrides
+  error • Non-nullable instance field 'context' must be initialized • lib/features/hospital/home/hospital_home_screen.dart:567:27 • not_initialized_non_nullable_instance_field
+  error • Expected to find ';' • lib/features/hospital/home/hospital_home_screen.dart:567:34 • expected_token
+  error • Expected an identifier • lib/features/hospital/home/hospital_home_screen.dart:568:3 • missing_identifier
+  error • Non-nullable instance field '' must be initialized • lib/features/hospital/home/hospital_home_screen.dart:568:3 • not_initialized_non_nullable_instance_field
+  error • Expected a method, getter, setter or operator declaration • lib/features/hospital/home/hospital_home_screen.dart:568:4 • expected_executable
+  error • Expected a method, getter, setter or operator declaration • lib/features/hospital/home/hospital_home_screen.dart:568:6 • expected_executable
+  error • Expected a method, getter, setter or operator declaration • lib/features/hospital/home/hospital_home_screen.dart:611:1 • expected_executable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/home/hospital_notifications_screen.dart:113:55 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/home/hospital_notifications_screen.dart:123:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/home/hospital_search_screen.dart:250:17 • deprecated_member_use
+warning • Unused import: 'package:www/features/hospital/auth/hospital_login_screen.dart' • lib/features/hospital/profile/hospital_profile_screen.dart:7:8 • unused_import
+   info • The type name 'profile' isn't an UpperCamelCase identifier • lib/features/hospital/profile/hospital_profile_screen.dart:10:7 • camel_case_types
+   info • The type name '_profileState' isn't an UpperCamelCase identifier • lib/features/hospital/profile/hospital_profile_screen.dart:17:7 • camel_case_types
+   info • Don't use 'BuildContext's across async gaps • lib/features/hospital/profile/hospital_profile_screen.dart:118:54 • use_build_context_synchronously
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/hospital/requests/hospital_blood_request_screen.dart:71:15 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/hospital/requests/hospital_blood_request_screen.dart:108:15 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/features/hospital/requests/hospital_blood_request_screen.dart:141:33 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:64:83 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:175:87 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:208:87 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:300:83 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:344:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:346:53 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:424:59 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:455:76 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_request_details_screen.dart:465:78 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_requests_screen.dart:232:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_requests_screen.dart:233:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_requests_screen.dart:268:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_requests_screen.dart:316:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/hospital/requests/hospital_requests_screen.dart:368:37 • deprecated_member_use
+warning • Unused import: 'package:www/features/onboarding/role_selection_screen.dart' • lib/features/onboarding/onboarding_content.dart:3:8 • unused_import
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/onboarding/onboarding_content.dart:23:64 • deprecated_member_use
+   info • The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' • lib/features/onboarding/onboarding_screen.dart:2:8 • unnecessary_import
+warning • Unused import: 'package:www/features/donor/auth/donor_login_screen.dart' • lib/features/onboarding/role_selection_screen.dart:3:8 • unused_import
+warning • Unused import: 'package:www/features/hospital/auth/hospital_login_screen.dart' • lib/features/onboarding/role_selection_screen.dart:4:8 • unused_import
+warning • Unused import: 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart' • lib/features/onboarding/role_selection_screen.dart:6:8 • unused_import
+warning • Unused import: 'package:www/features/onboarding/onboarding_screen.dart' • lib/features/splash_screen/splash_screen.dart:5:8 • unused_import
+warning • The value of the local variable 'isDark' isn't used • lib/features/splash_screen/splash_screen.dart:68:11 • unused_local_variable
+warning • Unused import: 'package:www/main.dart' • test/widget_test.dart:12:8 • unused_import
+
