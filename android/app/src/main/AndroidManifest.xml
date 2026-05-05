@@ -1,6 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Required for Firebase (Firestore, Auth) and all network calls -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+
     <application
-        android:label="www"
+        android:label="BloodLink"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
