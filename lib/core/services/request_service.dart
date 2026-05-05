@@ -26,6 +26,16 @@ class RequestService {
         type: 'request_incoming',
       ));
     }
+    if (req.donorId != null && req.donorId!.isNotEmpty) {
+      await NotificationService.create(AppNotification(
+        receiverId: req.donorId,
+        title: 'Request Sent',
+        body:
+            'Done sending a request to ${req.bloodBankName ?? "the blood bank"} and we are waiting for acceptance.',
+        timestamp: DateTime.now().toIso8601String(),
+        type: 'request_sent_donor',
+      ));
+    }
   }
 
   static Future<void> delete(String requestId) async {
@@ -130,6 +140,28 @@ class RequestService {
               '${req.bloodBankName ?? "A Blood Bank"} has rejected your request for ${req.bloodType}.',
           timestamp: DateTime.now().toIso8601String(),
           type: 'request_rejected_hospital',
+        ));
+      }
+    }
+
+    if (req.donorId != null && req.donorId!.isNotEmpty) {
+      if (newStatus == RequestStatus.approved) {
+        await NotificationService.create(AppNotification(
+          receiverId: req.donorId,
+          title: 'Request Approved',
+          body:
+              '${req.bloodBankName ?? "A Blood Bank"} has approved your request for ${req.bloodType} blood.',
+          timestamp: DateTime.now().toIso8601String(),
+          type: 'request_accepted_donor',
+        ));
+      } else if (newStatus == RequestStatus.rejected) {
+        await NotificationService.create(AppNotification(
+          receiverId: req.donorId,
+          title: 'Request Rejected',
+          body:
+              '${req.bloodBankName ?? "A Blood Bank"} has rejected your request for ${req.bloodType} blood.',
+          timestamp: DateTime.now().toIso8601String(),
+          type: 'request_rejected_donor',
         ));
       }
     }

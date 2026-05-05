@@ -49,4 +49,11 @@ class UserService {
       'hiddenCriticalReqs': FieldValue.arrayUnion([requestId]),
     });
   }
+
+  static Future<void> updateUser(String userId, Map<String, dynamic> data) async {
+    await FirebaseFirestore.instance
+        .collection(my_user.User.collectionName)
+        .doc(userId)
+        .update(data);
+  }
 }

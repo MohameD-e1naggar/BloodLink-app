@@ -8,8 +8,8 @@ import 'package:www/core/models/user.dart';
 class SharedPreferencesHelper {
   static late SharedPreferences sharedPreferences;
 
-  static const String _userKey = 'currentUser';
-  static const String _reqsKey = 'userReqs';
+  static const String userKey = 'currentUser';
+  static const String reqsKey = 'userReqs';
   static const String _themeKey = 'isDarkMode';
 
 
@@ -35,7 +35,7 @@ class SharedPreferencesHelper {
   static Future<bool> setUser(User user) async {
     try {
       final jsonString = jsonEncode(user.toMap());
-      final success = await sharedPreferences.setString(_userKey, jsonString);
+      final success = await sharedPreferences.setString(userKey, jsonString);
       if (!success) {
         print('SharedPreferencesHelper.setUser() returned false');
       }
@@ -49,13 +49,13 @@ class SharedPreferencesHelper {
   static Future<bool> setReqs(List<Request>? reqs) async {
     try {
       if (reqs == null || reqs.isEmpty) {
-        await sharedPreferences.remove(_reqsKey);
+        await sharedPreferences.remove(reqsKey);
         return true;
       }
 
       final listMap = reqs.map((req) => req.toMap()).toList();
       final jsonString = jsonEncode(listMap);
-      final success = await sharedPreferences.setString(_reqsKey, jsonString);
+      final success = await sharedPreferences.setString(reqsKey, jsonString);
 
       if (!success) {
         print('SharedPreferencesHelper.setReqs() returned false');
@@ -69,7 +69,7 @@ class SharedPreferencesHelper {
 
   static Future<User?> getUser() async {
     try {
-      final jsonString = sharedPreferences.getString(_userKey);
+      final jsonString = sharedPreferences.getString(userKey);
 
       if (jsonString == null || jsonString.isEmpty) {
         return null;
@@ -85,7 +85,7 @@ class SharedPreferencesHelper {
 
   static Future<List<Request>> getReqs() async {
     try {
-      final jsonString = sharedPreferences.getString(_reqsKey);
+      final jsonString = sharedPreferences.getString(reqsKey);
 
       if (jsonString == null || jsonString.isEmpty) {
         return [];

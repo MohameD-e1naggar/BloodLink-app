@@ -87,7 +87,9 @@ class NotificationsScreen extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            NotificationService.deleteAllForReceiver(uid);
+          },
           child: Text(
             "Clear All",
             style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 13),

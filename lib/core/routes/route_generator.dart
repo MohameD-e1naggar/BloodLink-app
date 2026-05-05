@@ -13,6 +13,7 @@ import 'package:www/features/donor/auth/registration/basic_info_screen.dart';
 import 'package:www/features/donor/auth/registration/personal_info_screen.dart';
 import 'package:www/features/donor/auth/registration/health_screening_screen.dart';
 import 'package:www/features/donor/auth/registration/review_summary_screen.dart';
+import 'package:www/features/donor/home/donor_notifications_screen.dart';
 
 import 'package:www/features/hospital/auth/hospital_login_screen.dart';
 import 'package:www/features/hospital/hospital_wrapper.dart';
@@ -109,6 +110,9 @@ class RouteGenerator {
       case Routes.donorConfirmDonationRoute:
         final bloodBank = settings.arguments as my_user.User;
         return _build((_) => MakeAppointmentScreen(bloodBank: bloodBank));
+
+      case Routes.donorNotificationsRoute:
+        return _build((_) => const DonorNotificationsScreen());
 
       // Hospital
 

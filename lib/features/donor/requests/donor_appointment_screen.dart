@@ -147,24 +147,6 @@ class BloodBanksScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  " 2.1 Km",
-                  style: TextStyle(
-                    color: AppColors.redDark,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 20),

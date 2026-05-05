@@ -13,6 +13,7 @@ abstract class Routes {
   static const String donorBloodBanksRoute = '/donor/blood-banks';
   static const String donorConfirmDonationRoute = '/donor/confirm-donation';
   static const String donorAppointmentRoute = '/donor/appointment';
+  static const String donorNotificationsRoute = '/donor/notifications';
 
   static const String hospitalLoginRoute = '/hospital/login';
   static const String hospitalRegisterRoute = '/hospital/register';

@@ -98,7 +98,9 @@ class _BloodBankNotificationsState extends State<BloodBankNotifications> {
       ),
       actions: [
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            NotificationService.deleteAllForReceiver(uid);
+          },
           child: Text(
             "Clear All",
             style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 13),

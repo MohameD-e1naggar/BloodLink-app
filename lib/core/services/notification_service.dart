@@ -26,4 +26,26 @@ class NotificationService {
           return list;
         });
   }
+
+  static Future<void> deleteAllForReceiver(String receiverId) async {
+    final querySnapshot = await _collection()
+        .where('receiverId', isEqualTo: receiverId)
+        .get();
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (var doc in querySnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+  }
+
+  static Future<void> markAsRead(String notificationId) async {
+    await _collection().doc(notificationId).update({'isRead': true});
+  }
+
+  static Future<void> delete(String notificationId) async {
+    await _collection().doc(notificationId).delete();
+  }
 }

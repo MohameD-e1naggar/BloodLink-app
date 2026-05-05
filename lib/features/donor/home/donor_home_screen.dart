@@ -205,37 +205,44 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightCard,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: cs.onSurface.withOpacity(0.1)),
-                ),
-                child: Icon(
-                  Icons.notifications_none,
-                  color: cs.onSurface,
-                  size: 24,
-                ),
-              ),
-              if (reqNum > 0)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    height: 10,
-                    width: 10,
-                    decoration: BoxDecoration(
-                      color: AppColors.redDark,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 1.5),
-                    ),
+          InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () async {
+              await Navigator.pushNamed(context, Routes.donorNotificationsRoute);
+              if (mounted) setState(() {});
+            },
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightCard,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: cs.onSurface.withOpacity(0.1)),
+                  ),
+                  child: Icon(
+                    Icons.notifications_none,
+                    color: cs.onSurface,
+                    size: 24,
                   ),
                 ),
-            ],
+                if (reqNum > 0)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      height: 10,
+                      width: 10,
+                      decoration: BoxDecoration(
+                        color: AppColors.redDark,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 1.5),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),

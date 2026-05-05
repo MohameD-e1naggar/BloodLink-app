@@ -6,11 +6,16 @@ import 'package:www/core/services/firestore_service.dart';
 import 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart';
 import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/ValidatorManager.dart';
 
-class BloodBankProfileScreen extends StatelessWidget {
+class BloodBankProfileScreen extends StatefulWidget {
+  const BloodBankProfileScreen({super.key});
 
-  const BloodBankProfileScreen({super.key}) ;
+  @override
+  State<BloodBankProfileScreen> createState() => _BloodBankProfileScreenState();
+}
 
+class _BloodBankProfileScreenState extends State<BloodBankProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -19,7 +24,7 @@ class BloodBankProfileScreen extends StatelessWidget {
           : Future.value(null),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
@@ -27,7 +32,7 @@ class BloodBankProfileScreen extends StatelessWidget {
         }
 
         if (!snapshot.hasData) {
-          return Text("No user found");
+          return const Text("No user found");
         }
 
         final user = snapshot.data!;
@@ -79,7 +84,7 @@ class BloodBankProfileScreen extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 50,
                           backgroundColor: isDark ? const Color(0xFF1A1A1A) : AppColors.lightSurface,
-                          child: Text(
+                          child: const Text(
                             'B',
                             style: TextStyle(
                               color: Colors.white,
@@ -102,7 +107,7 @@ class BloodBankProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                 Text(
+                Text(
                   user.name ?? "",
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
                 ),
@@ -159,6 +164,15 @@ class BloodBankProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
+                _buildSectionTitle('ACCOUNT SETTINGS'),
+                _buildInfoCard([
+                  _buildActionTile(Icons.edit_outlined, 'Edit Profile', () => _showEditProfileDialog(user)),
+                  _buildDivider(context),
+                  _buildActionTile(Icons.lock_outline, 'Change Password', () => _showChangePasswordDialog()),
+                ], context),
+
+                const SizedBox(height: 24),
+
                 _buildSectionTitle('LOCATION'),
                 _buildInfoCard([
                   _buildInfoTile(
@@ -175,7 +189,7 @@ class BloodBankProfileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Icon(Icons.map_outlined, color: Colors.grey, size: 36),
                     ),
                   ),
@@ -185,7 +199,8 @@ class BloodBankProfileScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 0),
                   child: ElevatedButton(
                     onPressed: () async {
-                      await SharedPreferencesHelper.clear();
+                      await SharedPreferencesHelper.removeKey(SharedPreferencesHelper.userKey);
+                      await SharedPreferencesHelper.removeKey(SharedPreferencesHelper.reqsKey);
                       await FirebaseAuth.instance.signOut();
                       if (context.mounted) {
                         Navigator.pushReplacementNamed(context, Routes.bloodBankLoginRoute);
@@ -213,7 +228,7 @@ class BloodBankProfileScreen extends StatelessWidget {
             ),
           ),
         );
-      }
+      },
     );
   }
 
@@ -293,6 +308,223 @@ class BloodBankProfileScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildActionTile(IconData icon, String title, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2A1515) : AppColors.red.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          color: AppColors.redDark,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: cs.onSurface,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+      onTap: onTap,
+    );
+  }
+
+  void _showEditProfileDialog(my_user.User user) {
+    final nameController = TextEditingController(text: user.name);
+    final addressController = TextEditingController(text: user.address);
+    final phoneController = TextEditingController(text: user.phoneNumber);
+    final adminNameController = TextEditingController(text: user.adminName);
+    final adminPhoneController = TextEditingController(text: user.adminPhoneNumber);
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text("Edit Profile", style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 20),
+                  _buildTextField(nameController, "Bank Name", Icons.business, ValidatorManager.validateName),
+                  const SizedBox(height: 15),
+                  _buildTextField(addressController, "Address", Icons.location_on, ValidatorManager.validateAddress),
+                  const SizedBox(height: 15),
+                  _buildTextField(phoneController, "Contact Phone", Icons.phone, ValidatorManager.validatePhoneNumber),
+                  const SizedBox(height: 15),
+                  _buildTextField(adminNameController, "Admin Name", Icons.person, ValidatorManager.validateName),
+                  const SizedBox(height: 15),
+                  _buildTextField(adminPhoneController, "Admin Phone", Icons.smartphone, ValidatorManager.validatePhoneNumber),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (formKey.currentState!.validate()) {
+                        await UserService.updateUser(user.id!, {
+                          'name': nameController.text,
+                          'address': addressController.text,
+                          'phoneNumber': phoneController.text,
+                          'adminName': adminNameController.text,
+                          'adminPhoneNumber': adminPhoneController.text,
+                        });
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          setState(() {});
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.redDark,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text("Change Password", style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 20),
+                _buildTextField(currentPasswordController, "Current Password", Icons.lock_outline, ValidatorManager.validatePassword, isPassword: true),
+                const SizedBox(height: 15),
+                _buildTextField(newPasswordController, "New Password", Icons.lock, ValidatorManager.validatePassword, isPassword: true),
+                const SizedBox(height: 15),
+                _buildTextField(confirmPasswordController, "Confirm New Password", Icons.lock_reset, (val) => ValidatorManager.validateConfirmPassword(val, newPasswordController.text), isPassword: true),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (formKey.currentState!.validate()) {
+                      try {
+                        User? user = FirebaseAuth.instance.currentUser;
+                        AuthCredential credential = EmailAuthProvider.credential(email: user!.email!, password: currentPasswordController.text);
+                        await user.reauthenticateWithCredential(credential);
+                        await user.updatePassword(newPasswordController.text);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Password updated successfully")),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Error: ${e.toString()}")),
+                          );
+                        }
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.redDark,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text("Change Password", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, String? Function(String?)? validator, {bool isPassword = false}) {
+    final cs = Theme.of(context).colorScheme;
+    return TextFormField(
+      controller: controller,
+      obscureText: isPassword,
+      validator: validator,
+      style: TextStyle(color: cs.onSurface),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: AppColors.redDark, size: 20),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: cs.onSurface.withValues(alpha: 0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.redDark),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+      ),
     );
   }
 
