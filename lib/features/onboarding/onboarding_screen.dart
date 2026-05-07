@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:www/features/onboarding/onboarding_content.dart';
 import 'package:www/features/onboarding/onboarding_model.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

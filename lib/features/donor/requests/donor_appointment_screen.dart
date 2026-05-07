@@ -2,7 +2,7 @@ import 'package:www/core/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/features/donor/requests/donor_confirm_donation_screen.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 import 'package:www/core/models/user.dart';
 
 class BloodBanksScreen extends StatelessWidget {

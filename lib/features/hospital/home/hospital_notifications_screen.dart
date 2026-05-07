@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/app_notification.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class NotificationsScreen extends StatelessWidget {
   final String uid;

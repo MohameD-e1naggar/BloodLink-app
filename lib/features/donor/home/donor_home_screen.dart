@@ -7,7 +7,7 @@ import 'package:www/core/models/blood_request.dart';
 import 'package:www/features/donor/requests/donor_appointment_screen.dart';
 import 'package:www/features/donor/auth/donor_login_screen.dart';
 import 'package:www/core/models/user.dart' as my_user;
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class DonorHomeScreen extends StatefulWidget {
   const DonorHomeScreen({super.key});

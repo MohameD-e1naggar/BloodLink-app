@@ -1,7 +1,7 @@
 import 'package:www/core/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:www/features/donor/auth/registration/review_summary_screen.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class HealthScreeningScreen extends StatefulWidget {
   final String fullName;

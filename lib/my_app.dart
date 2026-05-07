@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'core/routes/route_generator.dart';
 import 'core/routes/routes.dart';
-import 'core/utiles/ThemeManager.dart';
+import 'core/utiles/theme_manager.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

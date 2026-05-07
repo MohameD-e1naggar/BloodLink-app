@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:www/core/services/notification_service.dart';
 import 'package:www/core/models/app_notification.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class DonorNotificationsScreen extends StatefulWidget {
   const DonorNotificationsScreen({super.key});

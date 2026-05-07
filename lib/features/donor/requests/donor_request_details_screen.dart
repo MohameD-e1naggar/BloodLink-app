@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:www/core/models/blood_request.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class DonationDetailsScreen extends StatefulWidget {
   final Request request;

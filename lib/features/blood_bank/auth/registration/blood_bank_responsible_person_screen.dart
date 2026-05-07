@@ -1,4 +1,4 @@
-import 'package:www/core/utiles/ValidatorManager.dart';
+import 'package:www/core/utiles/validator_manager.dart';
 import 'package:www/core/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -7,7 +7,7 @@ import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/features/blood_bank/blood_bank_wrapper.dart';
 import 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class BloodBankResponsiblePersonScreen extends StatefulWidget {
 

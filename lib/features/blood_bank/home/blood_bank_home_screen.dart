@@ -8,7 +8,7 @@ import 'package:www/core/models/app_notification.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/models/user.dart' as my_user;
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 ValueNotifier<bool> refreshHome = ValueNotifier(false);
 class BloodBankHomeScreen extends StatefulWidget {

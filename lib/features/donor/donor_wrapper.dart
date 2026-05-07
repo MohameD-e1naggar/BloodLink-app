@@ -4,7 +4,7 @@ import 'package:www/features/donor/profile/donor_profile_screen.dart';
 import 'package:www/features/donor/requests/donor_request_screen.dart';
 import 'package:www/features/donor/auth/donor_login_screen.dart';
 import 'package:www/features/donor/home/donor_home_screen.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 import 'package:www/core/services/firestore_service.dart';
 
 class DonorWrapper extends StatefulWidget {

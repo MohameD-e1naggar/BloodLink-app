@@ -9,7 +9,7 @@ import 'package:www/core/models/user.dart' as my_user;
 
 import 'package:www/features/hospital/requests/hospital_blood_request_screen.dart';
 import 'package:www/features/hospital/home/hospital_search_screen.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 ValueNotifier<bool> refreshHospitalHome = ValueNotifier(false);
 class HospitalHomeScreen extends StatefulWidget {
