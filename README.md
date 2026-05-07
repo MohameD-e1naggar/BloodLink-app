@@ -18,9 +18,17 @@ To ensure this project runs exactly as it does on the developer's machine, we ha
 - **Dart**: `^3.11.5` (Specified in `pubspec.yaml`)
 
 **Recommendation**: Use [FVM (Flutter Version Management)](https://fvm.app/) to automatically handle these versions.
-1. Install FVM: `dart pub global activate fvm`
-2. Use the pinned version: `fvm use`
-3. Run all commands with `fvm` prefix (e.g., `fvm flutter run`).
+
+**1. Install FVM**:
+- **If you have Dart/Flutter**: `dart pub global activate fvm`
+- **If you have Homebrew (Mac)**: `brew tap leoafarias/fvm && brew install fvm`
+- **Windows/Standalone**: Follow the [official install guide](https://fvm.app/docs/getting_started/installation).
+
+**2. Initialize Project**:
+Run `fvm use` in the project root. FVM will automatically download and set up the correct Flutter and Dart SDKs for you.
+
+**3. Use the prefix**:
+Run all commands with the `fvm` prefix (e.g., `fvm flutter run`).
 
 ---
 > [!TIP]
@@ -39,6 +47,9 @@ fvm flutter pub get
 ```
 
 ### 4. Firebase Configuration 🔐
+> [!CAUTION]
+> **CRITICAL**: The app will fail to build (`Target kernel_snapshot_program failed`) until you complete this section. This is because the Firebase configuration files are ignored by Git for security and must be regenerated on your machine.
+
 Since sensitive configuration files are ignored by Git, you must re-configure Firebase for your local environment:
 
 1. **Install Firebase CLI**:

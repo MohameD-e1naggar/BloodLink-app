@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:www/features/blood_bank/home/blood_bank_home_screen.dart';
 import 'package:www/features/blood_bank/profile/blood_bank_profile_screen.dart';
 import 'package:www/features/blood_bank/requests/blood_bank_requests_screen.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 import 'package:www/core/services/firestore_service.dart';
 
 class BloodBankWrapper extends StatefulWidget {

@@ -11,6 +11,8 @@ class AppColors {
   static const Color darkSurface = Color(0xFF252525);
   static const Color lightBorder = Color(0xFFE0E0E0);
   static const Color darkBorder = Color(0xFF333333);
+  static const Color lightOnSurface = Colors.black87;
+  static const Color darkOnSurface = Colors.white;
 }
 
 class AppTheme {

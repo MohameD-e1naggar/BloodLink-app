@@ -5,8 +5,8 @@ import 'package:www/core/cache/shared_preferences_helper.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/features/blood_bank/auth/blood_bank_login_screen.dart';
 import 'package:www/core/models/user.dart' as my_user;
-import 'package:www/core/utiles/ThemeManager.dart';
-import 'package:www/core/utiles/ValidatorManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
+import 'package:www/core/utiles/validator_manager.dart';
 
 class BloodBankProfileScreen extends StatefulWidget {
   const BloodBankProfileScreen({super.key});

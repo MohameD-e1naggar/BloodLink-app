@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:www/features/hospital/requests/hospital_requests_screen.dart';
 import 'package:www/features/hospital/home/hospital_home_screen.dart';
 import 'package:www/features/hospital/profile/hospital_profile_screen.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 import 'package:www/core/services/firestore_service.dart';
 
 class HospitalWrapper extends StatefulWidget {

@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/user.dart' as my_user;
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class ReviewSummaryScreen extends StatefulWidget {
   final String fullName;

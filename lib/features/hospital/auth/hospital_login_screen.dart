@@ -1,4 +1,4 @@
-import 'package:www/core/utiles/ValidatorManager.dart';
+import 'package:www/core/utiles/validator_manager.dart';
 import 'package:www/core/routes/routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +7,7 @@ import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/features/hospital/hospital_wrapper.dart';
 
 import 'package:www/features/hospital/auth/registration/hospital_registration_screen.dart';
-import 'package:www/core/utiles/ThemeManager.dart';
+import 'package:www/core/utiles/theme_manager.dart';
 
 class HospitalLoginScreen extends StatefulWidget {
 
