@@ -1,0 +1,23 @@
+{
+    "name": "Flutter Dev Environment",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {}
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "dart.flutterSdkPath": "/opt/flutter"
+            },
+            "extensions": [
+                "dart-code.flutter",
+                "dart-code.dart-code"
+            ]
+        }
+    },
+    "forwardPorts": [8080],
+    "containerEnv": {
+        "ADB_SERVER_SOCKET": "tcp:host.docker.internal:5037"
+    },
+    "postCreateCommand": "flutter pub get"
+}

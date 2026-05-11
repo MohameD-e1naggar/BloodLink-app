@@ -90,3 +90,34 @@ fvm flutter run
 
 ## 📄 License
 This project is for internal use/development. Refer to the project owners for licensing details.
+
+---
+
+## 🐳 Developing with Docker (VS Code DevContainers)
+
+If you are a collaborator and want to avoid installing the entire Flutter SDK and Android Build Tools locally, you can use our pre-configured Docker environment.
+
+### Prerequisites for Docker Development
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+2. Install [Visual Studio Code](https://code.visualstudio.com/).
+3. Install the **Dev Containers** extension in VS Code.
+4. Have your physical Android phone connected to your computer with **USB Debugging** enabled.
+5. Have `adb` (Android Debug Bridge) installed on your computer.
+
+### Connecting your Phone to the Container
+Because the Docker container runs in isolation, we need to forward your phone's connection to it.
+1. Connect your phone via USB.
+2. Open your host machine's terminal (not in VS Code) and run:
+   ```bash
+   adb kill-server
+   adb -a nodaemon server start
+   ```
+   *(Leave this terminal open. This exposes your phone to the Docker container.)*
+
+### Opening the Project
+1. Open this repository folder in VS Code.
+2. A prompt will appear in the bottom right saying: **"Folder contains a Dev Container configuration file. Reopen to develop in a container."** Click **Reopen in Container**.
+3. (Alternatively, press `F1` > type `Dev Containers: Reopen in Container`).
+4. VS Code will build the Docker image (this may take a few minutes the first time as it downloads the SDKs).
+5. Once loaded, open a terminal inside VS Code and run `fvm flutter devices`. You should see your physical phone listed!
+6. Run the app: `fvm flutter run`.
