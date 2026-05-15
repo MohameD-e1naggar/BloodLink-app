@@ -13,6 +13,7 @@ enum Urgency {
 enum ReqSender{
   donor,
   hospital,
+  bloodBank,
 }
 
 class Request {
@@ -23,6 +24,8 @@ class Request {
   final String? bloodBankName;
   final String? hospitalName;
   final String? bloodBankId;
+  final String? requesterId;
+  final String? requesterName;
   final String? bloodType;
   final String? reqSender;
   final int? units;
@@ -47,6 +50,8 @@ class Request {
     this.reqStatus,
     this.urgency,
     this.reqSender,
+    this.requesterId,
+    this.requesterName,
     this.id,
     this.donorsAcceptedCriticalReqNum,
     this.approvedAt,
@@ -65,6 +70,8 @@ class Request {
       'reqStatus': reqStatus,
       'urgency': urgency,
       'reqSender': reqSender,
+      'requesterId': requesterId,
+      'requesterName': requesterName,
       'hospitalName': hospitalName,
       'donorsAcceptedCriticalReqNum':donorsAcceptedCriticalReqNum,
       'approvedAt': approvedAt,
@@ -85,6 +92,8 @@ class Request {
       reqStatus:map['reqStatus'],
       urgency: map['urgency'],
       reqSender: map['reqSender'],
+      requesterId: map['requesterId'],
+      requesterName: map['requesterName'],
       hospitalName: map['hospitalName'],
       donorsAcceptedCriticalReqNum: map['donorsAcceptedCriticalReqNum'],
       approvedAt: map['approvedAt'],
@@ -103,6 +112,8 @@ class Request {
     String? reqStatus,
     String? urgency,
     String? reqSender,
+    String? requesterId,
+    String? requesterName,
     String? hospitalName,
     int? donorsAcceptedCriticalReqNum,
     String? approvedAt,
@@ -119,6 +130,8 @@ class Request {
       reqStatus: reqStatus ?? this.reqStatus,
       urgency: urgency ?? this.urgency,
       reqSender: reqSender ?? this.reqSender,
+      requesterId: requesterId ?? this.requesterId,
+      requesterName: requesterName ?? this.requesterName,
       hospitalName: hospitalName ?? this.hospitalName,
       donorsAcceptedCriticalReqNum : donorsAcceptedCriticalReqNum ?? this.donorsAcceptedCriticalReqNum,
       approvedAt: approvedAt ?? this.approvedAt,

@@ -28,4 +28,5 @@ abstract class Routes {
   static const String bloodBankRegisterResponsibleRoute = '/blood-bank/register/responsible';
   static const String bloodBankHomeRoute = '/blood-bank/home';
   static const String bloodBankNotificationsRoute = '/blood-bank/notifications';
+  static const String bloodBankBloodRequestRoute = '/blood-bank/blood-request';
 }

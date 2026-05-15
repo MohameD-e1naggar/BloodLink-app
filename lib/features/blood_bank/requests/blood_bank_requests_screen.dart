@@ -18,9 +18,93 @@ class BloodBankRequestsScreen extends StatefulWidget {
 }
 
 class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
-  Future<List<Request>> loadRequests() {
+  Future<List<Request>> _loadIncoming() {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     return RequestService.getIncomingForBloodBank(uid);
+  }
+
+  Future<List<Request>> _loadSent() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    return RequestService.getOutgoingForBloodBank(uid);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Text(
+            "Blood Bank Requests",
+            style: TextStyle(color: cs.onSurface),
+          ),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.refresh, color: cs.onSurface),
+              onPressed: () => setState(() {}),
+            ),
+          ],
+          bottom: TabBar(
+            indicatorColor: AppColors.redDark,
+            labelColor: AppColors.redDark,
+            unselectedLabelColor: cs.onSurface.withValues(alpha: 0.5),
+            tabs: const [
+              Tab(text: "INCOMING"),
+              Tab(text: "SENT"),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildRequestsList(_loadIncoming, isIncoming: true),
+            _buildRequestsList(_loadSent, isIncoming: false),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequestsList(Future<List<Request>> Function() loader, {required bool isIncoming}) {
+    final cs = Theme.of(context).colorScheme;
+    return FutureBuilder<List<Request>>(
+      future: loader(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}", style: TextStyle(color: cs.onSurface)));
+        }
+
+        final requests = (snapshot.data ?? [])
+            .where((r) => isIncoming ? r.units != 0 : true)
+            .toList();
+
+        if (requests.isEmpty) {
+          return Center(
+            child: Text(
+              isIncoming ? "No incoming requests" : "No sent requests",
+              style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: requests.length,
+          itemBuilder: (context, index) {
+            final req = requests[index];
+            return _buildCard(req, isIncoming: isIncoming);
+          },
+        );
+      },
+    );
   }
 
   Color _getStatusColor(String? status) {
@@ -38,84 +122,16 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
     }
   }
 
-  Future<void> _updateStatus(
-      Request req,
-      RequestStatus status,
-      ) async {
+  Future<void> _updateStatus(Request req, RequestStatus status) async {
     if (req.id == null) return;
-
     await RequestService.updateStatus(req.id!, status);
-
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return FutureBuilder<List<Request>>(
-      future: loadRequests(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: Center(
-              child: Text(
-                "Error: ${snapshot.error}",
-                style: TextStyle(color: cs.onSurface),
-              ),
-            ),
-          );
-        }
-
-        final filteredRequests = snapshot.data ?? [];
-
-
-        final requests = filteredRequests
-            .where((request) => request.units != 0)
-            .toList();
-
-        return Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            title: Text(
-              "Blood Bank Requests",
-              style: TextStyle(color: cs.onSurface),
-            ),
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            elevation: 0,
-          ),
-          body: requests.isEmpty
-              ? Center(
-            child: Text(
-              "No requests",
-              style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
-            ),
-          )
-              : ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: requests.length,
-            itemBuilder: (context, index) {
-              final req = requests[index];
-              return _buildCard(req);
-            },
-          ),
-        );
-      },
-    );
-  }
-  Widget _buildCard(Request req) {
+  Widget _buildCard(Request req, {required bool isIncoming}) {
     final isEmergency = req.urgency == Urgency.critical.name;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cs = Theme.of(context).colorScheme;
-
     final status = req.reqStatus;
 
     return Card(
@@ -142,38 +158,25 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (req.reqSender == ReqSender.hospital.name)
-                        Text(
-                          req.hospitalName ?? "",
-                          style: TextStyle(
-                            color: cs.onSurface,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      else
-                        FutureBuilder<String>(
-                          future: req.donorId != null
-                              ? UserService.getUser(req.donorId!)
-                                  .then((u) => u?.name ?? 'Unknown Donor')
-                              : Future.value('Unknown Donor'),
-                          builder: (context, snap) {
-                            final name = snap.data ?? 'Loading...';
-                            return Text(
-                              name,
-                              style: TextStyle(
-                                color: cs.onSurface,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                          },
-                        ),
                       Text(
-                        "${req.reqSender == ReqSender.hospital.name ? "${req.units} Units •" : ""}  ${req.time ?? ''} ${req.reqSender == ReqSender.hospital.name ? "" : " • ${req.date}"}",
+                        isIncoming 
+                          ? (req.reqSender == ReqSender.hospital.name 
+                              ? (req.hospitalName ?? "Hospital") 
+                              : (req.reqSender == ReqSender.bloodBank.name 
+                                  ? (req.requesterName ?? "Blood Bank") 
+                                  : "Donor Request"))
+                          : (req.requesterName ?? "My Request"),
+                        style: TextStyle(
+                          color: cs.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "${req.units} Units • ${req.time ?? ''}",
                         style: TextStyle(
                           color: cs.onSurface.withValues(alpha: 0.6),
                           fontSize: 12,
@@ -182,130 +185,117 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
                     ],
                   ),
                 ),
-              ],
-            ),
-
-            // ── Countdown badge for approved emergency requests ──────────
-            if (isEmergency && status == RequestStatus.approved.name)
-              _buildCountdownBadge(req.approvedAt),
-
-            Divider(color: isDark ? const Color(0xFF333333) : cs.onSurface.withValues(alpha: 0.1)),
-
-            if (status == RequestStatus.pending.name)
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () =>
-                          _updateStatus(req, RequestStatus.rejected),
-                      child: Text(
-                        "Reject",
-                        style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
-                      ),
-                    ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(status).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async{
-                        var user = await SharedPreferencesHelper.getUser();
-                        await RequestService.updateBloodBank(
-                            req.id ?? "",
-                            user?.name ?? "",
-                            user?.id ?? ""
-                        );
-                          _updateStatus(req, RequestStatus.approved);
-                          },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.redDark,
-                      ),
-                      child: const Text(
-                        "Accept",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                  child: Text(
+                    status?.toUpperCase() ?? 'PENDING',
+                    style: TextStyle(
+                      color: _getStatusColor(status),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
                     ),
-                  ),
-                ],
-              )
-
-            else if (status == RequestStatus.approved.name)
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Text(
-                        "Request Accepted",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async{
-
-                          _updateStatus(req, RequestStatus.fulfilled);
-                         var uid = FirebaseAuth.instance.currentUser!.uid;
-                          final inventory = await InventoryService.get(uid);
-                          if (inventory == null) return;
-
-                          Map<String, int> updated = inventory.toBloodMap();
-
-                          if (req.reqSender == ReqSender.donor.name) {
-                            updated[req.bloodType!] =
-                                ((updated[req.bloodType!] ?? 0) + 1);
-                          } else {
-                            final current = updated[req.bloodType!] ?? 0;
-                            final units = req.units ?? 0;
-                            updated[req.bloodType!] =
-                                (current - units).clamp(0, 9999).toInt();
-                          }
-
-                          await InventoryService.updateInventory(uid, Inventory(
-                            aPos: updated['A+'],
-                            aNeg: updated['A-'],
-                            bPos: updated['B+'],
-                            bNeg: updated['B-'],
-                            oPos: updated['O+'],
-                            oNeg: updated['O-'],
-                            abPos: updated['AB+'],
-                            abNeg: updated['AB-'],
-                          ));
-                          refreshHome.value = !refreshHome.value;
-                          setState(() {
-
-                          });
-
-                          },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: cs.onSurface.withValues(alpha: 0.5),
-                      ),
-                      child: const Text("Fulfill", style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                ],
-              )
-
-            else
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Request ${req.reqStatus}",
-                  style: TextStyle(
-                    color: _getStatusColor(req.reqStatus),
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
+              ],
+            ),
+            if (isEmergency && status == RequestStatus.approved.name)
+              _buildCountdownBadge(req.approvedAt),
+            Divider(color: isDark ? const Color(0xFF333333) : cs.onSurface.withValues(alpha: 0.1)),
+            
+            if (isIncoming)
+              // Incoming request actions (Accept/Reject/Fulfill)
+              if (status == RequestStatus.pending.name)
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => _updateStatus(req, RequestStatus.rejected),
+                        child: Text("Reject", style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6))),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final uid = FirebaseAuth.instance.currentUser!.uid;
+                          final inventory = await InventoryService.get(uid);
+                          
+                          if (inventory != null) {
+                            final currentStock = inventory.toBloodMap()[req.bloodType!] ?? 0;
+                            final neededUnits = req.units ?? 0;
+                            
+                            if (currentStock < (neededUnits + 10)) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Insufficient stock. You need at least ${neededUnits + 10} units of ${req.bloodType} to accept this (including 10 safety units).'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+                          }
+
+                          var user = await SharedPreferencesHelper.getUser();
+                          await RequestService.updateBloodBank(req.id ?? "", user?.name ?? "", user?.id ?? "");
+                          _updateStatus(req, RequestStatus.approved);
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.redDark),
+                        child: const Text("Accept", style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  ],
+                )
+              else if (status == RequestStatus.approved.name)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await _updateStatus(req, RequestStatus.fulfilled);
+                      var uid = FirebaseAuth.instance.currentUser!.uid;
+                      final inventory = await InventoryService.get(uid);
+                      if (inventory == null) return;
+
+                      Map<String, int> updated = inventory.toBloodMap();
+                      if (req.reqSender == ReqSender.donor.name) {
+                        updated[req.bloodType!] = (updated[req.bloodType!] ?? 0) + 1;
+                      } else {
+                        updated[req.bloodType!] = ((updated[req.bloodType!] ?? 0) - (req.units ?? 0)).clamp(0, 9999);
+                      }
+
+                      await InventoryService.updateInventory(uid, Inventory.fromMap(updated));
+                      refreshHome.value = !refreshHome.value;
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    child: const Text("Fulfill & Deduct Stock", style: TextStyle(color: Colors.white)),
+                  ),
+                )
+              else
+                Text("Request $status", style: TextStyle(color: _getStatusColor(status), fontWeight: FontWeight.bold))
+            
+            else
+              // Sent request actions (Sender CANNOT fulfill, only view)
+              if (status == RequestStatus.approved.name)
+                Column(
+                  children: [
+                    const Icon(Icons.check_circle_outline, color: Colors.green, size: 30),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Wait for ${req.bloodBankName ?? 'the blood bank'} to fulfill",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                )
+              else if (status == RequestStatus.pending.name)
+                Text("Waiting for other blood banks...", style: TextStyle(color: cs.onSurface.withOpacity(0.5), fontStyle: FontStyle.italic))
+              else
+                Text("Status: ${status?.toUpperCase()}", style: TextStyle(color: _getStatusColor(status), fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -315,18 +305,10 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
   Widget _buildCountdownBadge(String? approvedAt) {
     final remaining = EmergencyResetService.remainingTime(approvedAt);
     if (remaining == null) return const SizedBox.shrink();
-
     final label = EmergencyResetService.formatCountdown(remaining);
     final totalSeconds = remaining.inSeconds;
-    final maxSeconds = const Duration(hours: 6).inSeconds;
-    final fraction = totalSeconds / maxSeconds;
-
-    // Green when >4h, orange between 2–4h, red when <2h
-    final Color badgeColor = fraction > 0.66
-        ? const Color(0xFF43A047)
-        : fraction > 0.33
-            ? Colors.orange
-            : AppColors.redDark;
+    final fraction = totalSeconds / const Duration(hours: 6).inSeconds;
+    final Color badgeColor = fraction > 0.66 ? const Color(0xFF43A047) : fraction > 0.33 ? Colors.orange : AppColors.redDark;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -341,14 +323,7 @@ class _BloodBankRequestsScreenState extends State<BloodBankRequestsScreen> {
         children: [
           Icon(Icons.timer_outlined, color: badgeColor, size: 14),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: badgeColor,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(label, style: TextStyle(color: badgeColor, fontSize: 12, fontWeight: FontWeight.bold)),
         ],
       ),
     );

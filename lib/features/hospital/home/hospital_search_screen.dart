@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:www/core/services/firestore_service.dart';
 import 'package:www/core/models/user.dart' as my_user;
 import 'package:www/core/models/blood_inventory.dart';
@@ -46,6 +47,7 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
           'units': units,
           'status': status,
           'workingHours': bank.workingHours ?? 'N/A',
+          'phoneNumber': bank.phoneNumber ?? '',
         });
       }
 
@@ -118,48 +120,10 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
         ),
       ),
       centerTitle: true,
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(50),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                _buildTabItem("Find Stock", true),
-                _buildTabItem("Map View", false),
-                _buildTabItem("History", false),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildTabItem(String label, bool isActive) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cs = Theme.of(context).colorScheme;
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive ? cs.onSurface : cs.onSurface.withValues(alpha: 0.5),
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            height: 3,
-            color: isActive
-                ? AppColors.redDark
-                : (isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildFilterSection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -383,34 +347,49 @@ class _HospitalSearchScreenState extends State<HospitalSearchScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.directions_outlined,
-                      size: 16,
-                      color: cs.onSurface.withValues(alpha: 0.6),
-                    ),
-                    label: Text(
-                      "Directions",
-                      style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6), fontSize: 12),
-                    ),
+                TextButton.icon(
+                  onPressed: () async {
+                    final String? phone = item['phoneNumber'];
+                    if (phone != null && phone.isNotEmpty) {
+                      final Uri launchUri = Uri(
+                        scheme: 'tel',
+                        path: phone,
+                      );
+                      try {
+                        if (await canLaunchUrl(launchUri)) {
+                          await launchUrl(launchUri);
+                        } else {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Could not launch phone dialer')),
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
+                        }
+                      }
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Phone number not available')),
+                        );
+                      }
+                    }
+                  },
+                  icon: Icon(
+                    Icons.phone_outlined,
+                    size: 16,
+                    color: statusColor,
                   ),
-                ),
-                Container(width: 1, height: 20, color: isDark ? const Color(0xFF2A2A2A) : cs.onSurface.withOpacity(0.1)),
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.phone_outlined,
-                      size: 16,
-                      color: statusColor,
-                    ),
-                    label: Text(
-                      "Contact",
-                      style: TextStyle(color: statusColor, fontSize: 12),
-                    ),
+                  label: Text(
+                    "Contact",
+                    style: TextStyle(color: statusColor, fontSize: 12),
                   ),
                 ),
               ],

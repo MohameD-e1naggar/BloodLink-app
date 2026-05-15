@@ -483,7 +483,7 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
         border: Border.all(color: cs.onSurface.withOpacity(0.1)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
@@ -515,10 +515,10 @@ class _DonorHomeScreenState extends State<DonorHomeScreen> with RouteAware {
             ],
           ),
           Text(
-            '${request.units}\n${request.hospitalName}',
+            '${request.reqSender == ReqSender.hospital.name ? request.hospitalName : request.requesterName}',
             style: TextStyle(
               color: cs.onSurface.withValues(alpha: 0.5),
-              fontSize: 11,
+              fontSize: 15,
               height: 1.4,
             ),
           ),
