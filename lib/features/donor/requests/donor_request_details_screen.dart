@@ -66,7 +66,7 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
   }
 
   void _handleAccept(BuildContext context) async {
-    if (widget.request.id == null || widget.request.hospitalName == null) {
+    if (widget.request.id == null || widget.request.reqSender == ReqSender.hospital.name ? widget.request.hospitalName == null : widget.request.requesterName == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Missing hospital information')),
       );
@@ -122,7 +122,7 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
               child: Column(
                 children: [
                   Text(
-                    'Go to ${widget.request.hospitalName}',
+                    'Go to ${ widget.request == ReqSender.hospital.name ?  widget.request.hospitalName : widget.request.requesterName}',
                     style: TextStyle(
                       color: cs.onSurface,
                       fontSize: 16,
@@ -402,7 +402,7 @@ class _DonationDetailsScreenState extends State<DonationDetailsScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              widget.request.bloodBankName ?? "Unknown BloodBank",
+              widget.request.reqSender == ReqSender.hospital.name ? widget.request.hospitalName ?? widget.request.bloodBankName ?? "Unknown BloodBank" : widget.request.requesterName ?? widget.request.bloodBankName ?? "Unknown BloodBank" ,
               style: TextStyle(color: cs.onSurface),
             ),
           )

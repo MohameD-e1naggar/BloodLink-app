@@ -320,6 +320,21 @@ class _BloodBankHomeScreenState extends State<BloodBankHomeScreen> {
                         AppColors.redDark,
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          Routes.bloodBankBloodRequestRoute,
+                          arguments: user.name ?? 'Unknown Blood Bank',
+                        );
+                      },
+                      child: _buildActionBtn(
+                        'REQUEST BLOOD',
+                        Icons.add_shopping_cart_rounded,
+                        const Color(0xFF1B5E20), // A green color to differentiate
+                      ),
+                    ),
                   ],
                 ),
               ),

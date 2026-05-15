@@ -72,10 +72,28 @@ class RequestService {
         .where('reqSender', isEqualTo: ReqSender.hospital.name)
         .where('reqStatus', whereIn: activeStatuses)
         .get();
+    
+    final bloodBankQuery = await collection()
+        .where('reqSender', isEqualTo: ReqSender.bloodBank.name)
+        .where('reqStatus', whereIn: activeStatuses)
+        .get();
 
-    final allDocs = [...donorQuery.docs, ...hospitalQuery.docs];
+    final allDocs = [...donorQuery.docs, ...hospitalQuery.docs, ...bloodBankQuery.docs];
     final unique = {for (var doc in allDocs) doc.id: doc}.values;
-    return unique.map((doc) => doc.data()).toList();
+    
+    // Filter out requests sent by THIS blood bank (using requesterId)
+    return unique
+        .map((doc) => doc.data())
+        .where((req) => req.reqSender != ReqSender.bloodBank.name || req.requesterId != bloodBankId)
+        .toList();
+  }
+
+  static Future<List<Request>> getOutgoingForBloodBank(String bloodBankId) async {
+    final snapshot = await collection()
+        .where('requesterId', isEqualTo: bloodBankId)
+        .where('reqSender', isEqualTo: ReqSender.bloodBank.name)
+        .get();
+    return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
   static Future<void> updateStatus(String requestId, RequestStatus newStatus) async {
@@ -98,6 +116,13 @@ class RequestService {
     }
 
     await col.doc(requestId).update(updateData);
+
+    // If fulfilled and sender was a blood bank, increment their inventory
+    if (newStatus == RequestStatus.fulfilled && req.reqSender == ReqSender.bloodBank.name) {
+      if (req.requesterId != null && req.bloodType != null && req.units != null) {
+        await _incrementInventory(req.requesterId!, req.bloodType!, req.units!);
+      }
+    }
 
     if (req.bloodBankId != null && req.bloodBankId!.isNotEmpty) {
       if (newStatus == RequestStatus.approved) {
@@ -225,5 +250,23 @@ class RequestService {
         type: 'emergency_approved_hospital',
       ));
     }
+  }
+
+  static Future<void> _incrementInventory(String bloodBankId, String bloodType, int units) async {
+    final docRef = FirebaseFirestore.instance
+        .collection('User')
+        .doc(bloodBankId)
+        .collection('inventory')
+        .doc('main');
+
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) return;
+      final data = snapshot.data();
+      if (data == null) return;
+
+      int currentUnits = data[bloodType] ?? 0;
+      transaction.update(docRef, {bloodType: currentUnits + units});
+    });
   }
 }

@@ -28,6 +28,7 @@ import 'package:www/features/blood_bank/blood_bank_wrapper.dart';
 import 'package:www/features/blood_bank/home/blood_bank_notifications_screen.dart';
 import 'package:www/features/blood_bank/auth/registration/blood_bank_registration_screen.dart';
 import 'package:www/features/blood_bank/auth/registration/blood_bank_responsible_person_screen.dart';
+import 'package:www/features/blood_bank/requests/blood_bank_blood_request_screen.dart';
 
 import 'package:www/core/models/blood_request.dart';
 import 'package:www/core/models/user.dart' as my_user;
@@ -172,6 +173,10 @@ class RouteGenerator {
 
       case Routes.bloodBankNotificationsRoute:
         return _build((_) => const BloodBankNotifications());
+
+      case Routes.bloodBankBloodRequestRoute:
+        final bankName = settings.arguments as String;
+        return _build((_) => BloodBankBloodRequestScreen(bankName: bankName));
 
       default:
         return _errorRoute(settings.name);
